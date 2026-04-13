@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physik-Praktikum Woche 2 – E-Feld &amp; Magnetfeld</title>
+<style>
+:root {
+  --primary-900: #1e3a5f; --primary-700: #2c5f8a; --primary-500: #3b82f6;
+  --primary-100: #dbeafe; --primary-50: #eff6ff;
+  --green-600: #16a34a; --green-100: #dcfce7;
+  --red-600: #dc2626; --red-100: #fee2e2;
+  --yellow-600: #ca8a04; --yellow-100: #fef3c7; --yellow-border: #fde68a;
+  --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0;
+  --gray-400: #94a3b8; --gray-600: #475569; --gray-800: #1e293b;
+  --radius: 12px;
+}
+.theme-montag { --primary-900:#065064; --primary-700:#0e7490; --primary-500:#0891B2; --primary-100:#cffafe; --primary-50:#ecfeff; }
+.theme-dienstag { --primary-900:#1e3a8a; --primary-700:#1d4ed8; --primary-500:#2563EB; --primary-100:#dbeafe; --primary-50:#eff6ff; }
+.theme-mittwoch { --primary-900:#312e81; --primary-700:#4338ca; --primary-500:#4F46E5; --primary-100:#e0e7ff; --primary-50:#eef2ff; }
+.theme-donnerstag { --primary-900:#7c2d12; --primary-700:#c2410c; --primary-500:#EA580C; --primary-100:#ffedd5; --primary-50:#fff7ed; }
+.theme-freitag { --primary-900:#14532d; --primary-700:#15803d; --primary-500:#15803D; --primary-100:#dcfce7; --primary-50:#f0fdf4; }
+.theme-finale { --primary-900:#713f12; --primary-700:#a16207; --primary-500:#CA8A04; --primary-100:#fef9c3; --primary-50:#fefce8; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e0e8f0 100%);
+  color: var(--gray-800); min-height: 100vh; line-height: 1.6;
+}
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.hidden { display: none !important; }
+
+/* ===== WELCOME SCREEN ===== */
+.welcome-screen {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; text-align: center; padding: 40px 20px;
+}
+.welcome-screen h1 { font-size: 2.2em; color: var(--gray-800); margin-bottom: 4px; }
+.welcome-screen .subtitle { font-size: 1.1em; color: var(--gray-600); margin-bottom: 32px; }
+.welcome-card {
+  background: white; border-radius: var(--radius); padding: 32px 40px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 560px; width: 100%;
+}
+.welcome-card p { font-size: 1.05em; color: var(--gray-600); margin-bottom: 20px; text-align: left; line-height: 1.7; }
+.name-input-wrap { display: flex; gap: 10px; margin-bottom: 24px; }
+.name-input-wrap input {
+  flex: 1; padding: 12px 16px; font-size: 1.05em; border: 2px solid var(--gray-200);
+  border-radius: 8px; outline: none; transition: border-color 0.2s;
+}
+.name-input-wrap input:focus { border-color: var(--primary-500); }
+
+/* ===== HUB SCREEN ===== */
+.hub-screen { padding: 30px 20px; max-width: 900px; margin: 0 auto; }
+.hub-header { text-align: center; margin-bottom: 30px; }
+.hub-header h1 { font-size: 1.8em; color: var(--gray-800); margin-bottom: 4px; }
+.hub-header p { color: var(--gray-600); }
+.hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.station-card {
+  background: white; border-radius: var(--radius); padding: 24px; cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 5px solid var(--gray-400); position: relative;
+}
+.station-card:hover:not(.locked) { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.station-card.locked { opacity: 0.5; cursor: not-allowed; }
+.station-card.locked::after {
+  content: '🔒'; position: absolute; top: 12px; right: 16px; font-size: 1.3em;
+}
+.station-card.completed { border-left-color: var(--green-600); }
+.station-card .sc-emoji { font-size: 2em; margin-bottom: 8px; }
+.station-card .sc-day { font-size: 0.85em; font-weight: 700; text-transform: uppercase; color: var(--gray-400); letter-spacing: 1px; }
+.station-card .sc-name { font-size: 1.15em; font-weight: 700; color: var(--gray-800); margin: 4px 0; }
+.station-card .sc-topic { font-size: 0.92em; color: var(--gray-600); }
+.station-card .sc-score { font-size: 0.88em; color: var(--green-600); font-weight: 600; margin-top: 8px; }
+.hub-overall {
+  background: white; border-radius: var(--radius); padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); text-align: center;
+}
+.hub-overall .ho-bar { height: 10px; background: var(--gray-200); border-radius: 5px; margin: 12px 0; overflow: hidden; }
+.hub-overall .ho-fill { height: 100%; background: var(--green-600); border-radius: 5px; transition: width 0.4s; }
+
+/* ===== PASSWORD UNLOCK ===== */
+.pw-unlock {
+  background: white; border-radius: var(--radius); padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-top: 16px; text-align: center;
+}
+.pw-unlock summary { cursor: pointer; font-weight: 600; color: var(--gray-600); font-size: 0.95em; }
+.pw-unlock summary:hover { color: var(--gray-800); }
+.pw-unlock .pw-row { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+.pw-unlock .pw-row input { width: 200px; text-align: center; padding: 8px 12px; border: 2px solid var(--gray-300); border-radius: 8px; font-size: 0.95em; }
+.pw-unlock .pw-row button { background: #2563eb; color: white; padding: 8px 18px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; font-size: 0.95em; }
+.pw-unlock .pw-row button:active { opacity: 0.85; }
+.pw-msg { margin-top: 8px; font-size: 0.9em; font-weight: 600; min-height: 1.4em; }
+
+/* ===== STATION INTRO SCREEN ===== */
+.station-intro {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh; text-align: center; padding: 40px 20px;
+}
+.station-intro h1 { font-size: 2em; color: var(--primary-900); margin-bottom: 4px; }
+.station-intro .si-job { font-size: 1.1em; color: var(--primary-700); margin-bottom: 24px; }
+.si-card {
+  background: white; border-radius: var(--radius); padding: 32px 40px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08); max-width: 560px; width: 100%;
+}
+.si-card p { font-size: 1.05em; color: var(--gray-600); margin-bottom: 20px; text-align: left; line-height: 1.7; }
+
+/* ===== GAME SCREEN ===== */
+.progress-bar-wrap {
+  background: white; padding: 12px 20px; border-radius: var(--radius);
+  margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex; align-items: center; gap: 14px;
+}
+.progress-label { font-weight: 600; color: var(--primary-700); white-space: nowrap; font-size: 0.95em; }
+.progress-track { flex: 1; height: 10px; background: var(--gray-200); border-radius: 5px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--primary-500); border-radius: 5px; transition: width 0.4s ease; }
+.progress-score { font-size: 0.88em; color: var(--gray-600); white-space: nowrap; }
+.task-card {
+  background: white; border-radius: var(--radius); padding: 28px 32px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-left: 5px solid var(--primary-500);
+}
+.task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+.task-title { font-size: 1.2em; font-weight: 700; color: var(--primary-900); }
+.task-badge { display: inline-block; font-size: 0.8em; padding: 2px 10px; border-radius: 12px; font-weight: 600; margin-left: 8px; }
+.task-badge.easy { background: #dcfce7; color: #15803d; }
+.task-badge.medium { background: #fef3c7; color: #92400e; }
+.task-badge.hard { background: #fee2e2; color: #dc2626; }
+.task-badge.bonus { background: #fef9c3; color: #a16207; }
+.expert-timer {
+  background: var(--primary-50); border: 1px solid var(--primary-100); border-radius: 6px;
+  padding: 4px 12px; font-weight: 600; font-size: 0.95em; color: var(--primary-700); white-space: nowrap;
+}
+.expert-timer.warning { background: #fef3c7; border-color: #fde68a; color: #92400e; }
+.expert-timer.danger { background: var(--red-100); border-color: #fca5a5; color: var(--red-600); }
+.customer-intro {
+  background: var(--gray-50); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+  font-style: italic; color: var(--gray-600); font-size: 0.95em; border-left: 3px solid var(--primary-500);
+}
+.customer-intro strong { color: var(--gray-800); font-style: normal; }
+.task-text { font-size: 1.05em; line-height: 1.7; margin-bottom: 16px; color: var(--gray-800); }
+.given-box {
+  background: var(--primary-50); border: 1px solid var(--primary-100); border-radius: 8px;
+  padding: 10px 16px; font-family: 'Courier New', monospace; font-size: 0.98em; margin-bottom: 20px;
+}
+.input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.input-row label { font-weight: 600; color: var(--primary-700); min-width: 70px; }
+.input-row input[type="text"], .input-row input[type="number"] {
+  flex: 1; min-width: 120px; padding: 10px 14px; font-size: 1.05em;
+  border: 2px solid var(--gray-200); border-radius: 8px; outline: none; transition: border-color 0.2s;
+}
+.input-row input:focus { border-color: var(--primary-500); }
+.input-row select {
+  padding: 10px 14px; font-size: 1.05em; border: 2px solid var(--gray-200);
+  border-radius: 8px; background: white; cursor: pointer; outline: none; min-width: 90px;
+}
+.input-row select:focus { border-color: var(--primary-500); }
+.btn {
+  display: inline-block; padding: 14px 40px; font-size: 1.1em; font-weight: 600;
+  border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s, transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary-500); color: white; }
+.btn-primary:hover { background: var(--primary-700); }
+.btn-primary:disabled { background: var(--gray-400); cursor: not-allowed; transform: none; }
+.btn-submit { padding: 10px 28px; font-size: 1.05em; }
+.btn-secondary { background: var(--gray-200); color: var(--gray-800); padding: 10px 24px; font-size: 0.95em; }
+.btn-secondary:hover { background: var(--gray-400); color: white; }
+.hints-area { margin-top: 8px; }
+.hint-buttons { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.btn-hint {
+  padding: 8px 18px; font-size: 0.92em; background: white; border: 2px solid var(--primary-500);
+  color: var(--primary-500); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.btn-hint:hover { background: var(--primary-50); }
+.btn-hint:disabled { border-color: var(--gray-400); color: var(--gray-400); cursor: not-allowed; background: var(--gray-100); }
+.hint-text {
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+  padding: 10px 16px; margin-top: 8px; font-size: 0.98em; color: #92400e; display: none;
+}
+.hint-text.visible { display: block; }
+.feedback-inline { margin-top: 16px; padding: 14px 18px; border-radius: 8px; font-size: 1.02em; font-weight: 500; display: none; }
+.feedback-inline.success { display: block; background: var(--green-100); border: 1px solid #86efac; color: #15803d; }
+.feedback-inline.error { display: block; background: var(--red-100); border: 1px solid #fca5a5; color: var(--red-600); }
+.feedback-inline.unit-error { display: block; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+
+/* MC Buttons */
+.mc-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.mc-btn {
+  padding: 14px 20px; font-size: 1.02em; border: 2px solid var(--gray-200);
+  border-radius: 8px; background: white; cursor: pointer; text-align: left;
+  transition: all 0.2s; font-weight: 500;
+}
+.mc-btn:hover:not(:disabled) { border-color: var(--primary-500); background: var(--primary-50); }
+.mc-btn.correct { border-color: var(--green-600); background: var(--green-100); color: #15803d; cursor: default; }
+.mc-btn.wrong { border-color: var(--red-600); background: var(--red-100); color: var(--red-600); cursor: default; }
+.mc-btn:disabled { cursor: default; opacity: 0.7; }
+
+/* Table Task */
+.table-task { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+.table-task th, .table-task td { padding: 10px 14px; border: 1px solid var(--gray-200); text-align: left; }
+.table-task th { background: var(--primary-50); color: var(--primary-900); font-weight: 600; }
+.table-task select { padding: 6px 10px; font-size: 0.95em; border: 1px solid var(--gray-200); border-radius: 4px; }
+.table-task td.cell-correct { background: var(--green-100); }
+.table-task td.cell-wrong { background: var(--red-100); }
+
+/* Freetext */
+.freetext-area {
+  width: 100%; min-height: 120px; padding: 14px; font-size: 1.02em;
+  border: 2px solid var(--gray-200); border-radius: 8px; font-family: inherit;
+  resize: vertical; margin-bottom: 12px; outline: none;
+}
+.freetext-area:focus { border-color: var(--primary-500); }
+.model-solution {
+  background: var(--green-100); border: 1px solid #86efac; border-radius: 8px;
+  padding: 16px 20px; margin-top: 12px; font-size: 0.98em; line-height: 1.7;
+}
+.model-solution h4 { color: #15803d; margin-bottom: 8px; }
+.self-assess-wrap { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.self-assess-btn {
+  padding: 10px 20px; font-size: 0.95em; border: 2px solid var(--gray-200);
+  border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.self-assess-btn:hover { border-color: var(--primary-500); }
+.self-assess-btn.sa-correct { border-color: var(--green-600); color: var(--green-600); }
+.self-assess-btn.sa-correct:hover, .self-assess-btn.sa-correct.selected { background: var(--green-100); }
+.self-assess-btn.sa-partial { border-color: var(--yellow-600); color: var(--yellow-600); }
+.self-assess-btn.sa-partial:hover, .self-assess-btn.sa-partial.selected { background: var(--yellow-100); }
+.self-assess-btn.sa-wrong { border-color: var(--red-600); color: var(--red-600); }
+.self-assess-btn.sa-wrong:hover, .self-assess-btn.sa-wrong.selected { background: var(--red-100); }
+
+/* SVG container */
+.svg-wrap { margin: 16px 0; text-align: center; }
+.svg-wrap svg { max-width: 100%; height: auto; }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); z-index: 1000; padding: 20px;
+  overflow-y: auto; align-items: flex-start; justify-content: center;
+}
+.modal-overlay.visible { display: flex; }
+.modal-card {
+  background: white; border-radius: var(--radius); padding: 32px;
+  max-width: 700px; width: 100%; margin: 40px auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2); border-top: 5px solid var(--red-600);
+}
+.modal-card h2 { color: var(--red-600); margin-bottom: 8px; font-size: 1.3em; }
+.modal-subtitle { color: var(--gray-600); margin-bottom: 20px; font-size: 0.95em; }
+.solution-steps { background: var(--gray-50); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+.solution-step {
+  padding: 6px 0; font-size: 1.05em; line-height: 1.7;
+  border-bottom: 1px dotted var(--gray-200); font-family: 'Courier New', monospace;
+}
+.solution-step:last-child { border-bottom: none; }
+.solution-step.result {
+  font-weight: 700; color: var(--primary-700); font-size: 1.1em;
+  border-bottom: none; margin-top: 6px; font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.countdown-text { font-weight: 600; color: var(--gray-600); font-size: 1.02em; }
+
+/* Expert toggle */
+.expert-toggle {
+  display: flex; align-items: center; gap: 12px; padding: 16px;
+  background: var(--primary-50); border: 1px solid var(--primary-100);
+  border-radius: 8px; margin-bottom: 24px; cursor: pointer; text-align: left;
+}
+.expert-toggle input { width: 18px; height: 18px; cursor: pointer; }
+.expert-toggle .et-text strong { color: var(--primary-700); }
+.expert-toggle .et-text span { display: block; font-size: 0.88em; color: var(--gray-600); }
+
+/* End screen */
+.end-card {
+  background: white; border-radius: var(--radius); padding: 32px;
+  max-width: 700px; margin: 0 auto; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.end-card h1 { color: var(--primary-900); margin-bottom: 8px; font-size: 1.5em; }
+.end-score { font-size: 2.2em; font-weight: 700; color: var(--primary-500); margin: 16px 0; }
+.end-rating { font-size: 1.15em; color: var(--gray-600); margin-bottom: 24px; }
+.end-section { margin-bottom: 20px; }
+.end-section h3 { color: var(--primary-700); margin-bottom: 10px; font-size: 1.05em; }
+.error-item { background: var(--red-100); border-radius: 8px; padding: 10px 16px; margin-bottom: 8px; font-size: 0.98em; }
+.error-item strong { color: var(--red-600); }
+.error-item .correct-answer { color: var(--primary-700); font-weight: 600; }
+.hint-summary { background: var(--primary-50); border-radius: 8px; padding: 12px 16px; font-size: 1em; }
+.btn-restart { margin-top: 12px; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* Sketch instruction */
+.sketch-instruction {
+  background: #fefce8; border: 2px dashed #ca8a04; border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 16px; font-size: 1.02em;
+}
+.sketch-instruction strong { color: #a16207; }
+
+/* Bonus marker */
+.bonus-star { color: #ca8a04; font-weight: 700; }
+
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .task-card { padding: 20px; }
+  .modal-card { padding: 20px; }
+  .welcome-screen h1, .hub-header h1 { font-size: 1.5em; }
+  .welcome-card, .si-card { padding: 24px; }
+  .hub-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== WELCOME SCREEN ===== -->
+<div id="welcomeScreen" class="welcome-screen">
+  <h1>Physik-Praktikum Woche 2</h1>
+  <p class="subtitle">Elektrisches Feld &amp; Magnetfeld &ndash; Physik GK 11</p>
+  <div class="welcome-card">
+    <p>Willkommen zur zweiten Praktikumswoche! In f&uuml;nf verschiedenen Berufsfeldern l&ouml;st du Aufgaben zu <strong>elektrischen Feldern</strong>, <strong>Kondensatoren</strong>, <strong>Teilchenbeschleunigung</strong>, <strong>Magnetfeldern</strong> und dem <strong>Erdmagnetfeld</strong>.</p>
+    <p>Jede Station wird nach Abschluss der vorherigen freigeschaltet. Am Ende wartet das <strong>Sprint-Finale</strong>!</p>
+    <div class="name-input-wrap">
+      <input type="text" id="nameInput" placeholder="Dein Name (freiwillig)" maxlength="30">
+    </div>
+    <label class="expert-toggle" id="expertLabel">
+      <input type="checkbox" id="expertCheck">
+      <div class="et-text">
+        <strong>Expertenmodus</strong>
+        <span>90-Sekunden-Timer pro Aufgabe &amp; Bonus-Sprinter nach jeder Station</span>
+      </div>
+    </label>
+    <button class="btn btn-primary" onclick="startFromWelcome()">Praktikum starten</button>
+  </div>
+</div>
+
+<!-- ===== HUB SCREEN ===== -->
+<div id="hubScreen" class="hub-screen hidden">
+  <div class="hub-header">
+    <h1 id="hubTitle">Praktikumswoche 2</h1>
+    <p id="hubSubtitle">W&auml;hle deine n&auml;chste Station</p>
+  </div>
+  <div class="hub-grid" id="hubGrid"></div>
+  <div class="hub-overall">
+    <strong>Gesamtfortschritt</strong>
+    <div class="ho-bar"><div class="ho-fill" id="hubOverallFill" style="width:0%"></div></div>
+    <span id="hubOverallText">0 / 6 Stationen abgeschlossen</span>
+  </div>
+  <div class="pw-unlock">
+    <details>
+      <summary>🔑 Station per Passwort freischalten</summary>
+      <div class="pw-row">
+        <input type="text" id="pwInput" placeholder="Passwort eingeben" autocomplete="off">
+        <button onclick="tryPassword()">Freischalten</button>
+      </div>
+      <div class="pw-msg" id="pwMsg"></div>
+    </details>
+  </div>
+</div>
+
+<!-- ===== STATION INTRO ===== -->
+<div id="stationIntro" class="station-intro hidden">
+  <h1 id="siTitle"></h1>
+  <p class="si-job" id="siJob"></p>
+  <div class="si-card">
+    <p id="siText"></p>
+    <p id="siCount"></p>
+    <label class="expert-toggle" id="siExpertLabel">
+      <input type="checkbox" id="siExpertCheck">
+      <div class="et-text">
+        <strong>Expertenmodus</strong>
+        <span>90-Sekunden-Timer pro Aufgabe</span>
+      </div>
+    </label>
+    <button class="btn btn-primary" onclick="startStation()">Aufgaben starten</button>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="showHub()">Zur&uuml;ck</button>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="gameScreen" class="container hidden">
+  <div class="progress-bar-wrap">
+    <span class="progress-label" id="progressLabel"></span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-score" id="progressScore"></span>
+  </div>
+  <div class="task-card" id="taskCard">
+    <div class="task-header">
+      <div class="task-title" id="taskTitle"></div>
+      <div class="expert-timer hidden" id="expertTimer">90 s</div>
+    </div>
+    <div class="customer-intro" id="customerIntro"></div>
+    <div class="task-text" id="taskText"></div>
+    <div id="givenBox" class="given-box hidden"></div>
+    <div id="taskBody"></div>
+    <div class="hints-area" id="hintsArea">
+      <div class="hint-buttons">
+        <button class="btn-hint" id="hintBtn1" onclick="showHint(1)">Hinweis 1</button>
+        <button class="btn-hint" id="hintBtn2" onclick="showHint(2)">Hinweis 2</button>
+      </div>
+      <div class="hint-text" id="hintText1"></div>
+      <div class="hint-text" id="hintText2"></div>
+    </div>
+    <div class="feedback-inline" id="feedbackInline"></div>
+    <div id="svgArea" class="svg-wrap hidden"></div>
+  </div>
+</div>
+
+<!-- ===== SOLUTION MODAL ===== -->
+<div class="modal-overlay" id="solutionModal">
+  <div class="modal-card">
+    <h2 id="modalTitle">Leider nicht korrekt</h2>
+    <p class="modal-subtitle" id="modalSubtitle">Hier ist der vollst&auml;ndige L&ouml;sungsweg:</p>
+    <div class="solution-steps" id="solutionSteps"></div>
+    <div id="modalSvg" class="svg-wrap hidden"></div>
+    <div class="modal-footer">
+      <span class="countdown-text" id="countdownText">Weiter in 8 Sekunden...</span>
+      <button class="btn btn-primary" id="continueBtn" disabled onclick="nextTask()">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATION END SCREEN ===== -->
+<div id="stationEndScreen" class="hidden" style="padding:40px 20px;">
+  <div class="end-card">
+    <h1 id="endTitle"></h1>
+    <p id="endSubtitle" style="color:var(--gray-600)"></p>
+    <div class="end-score" id="endScore"></div>
+    <div class="end-rating" id="endRating"></div>
+    <div class="end-section" id="endErrors"></div>
+    <div class="end-section"><div class="hint-summary" id="endHints"></div></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="showHub()">Zur&uuml;ck zur &Uuml;bersicht</button>
+      <button class="btn btn-secondary btn-restart" onclick="replayStation()">Station wiederholen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== UNIT CONVERSION TABLE =====
+const UNIT_SI = {
+  'N':1,'kN':1e3,'mN':1e-3,'µN':1e-6,'nN':1e-9,
+  'C':1,'mC':1e-3,'µC':1e-6,'nC':1e-9,'pC':1e-12,
+  'V':1,'kV':1e3,'mV':1e-3,
+  'V/m':1,'kV/m':1e3,'MV/m':1e6,
+  'm':1,'cm':1e-2,'mm':1e-3,'km':1e3,
+  'm/s':1,'km/s':1e3,'km/h':1/3.6,
+  'm/s²':1,
+  'J':1,'kJ':1e3,'mJ':1e-3,'µJ':1e-6,'eV':1.6e-19,
+  'F':1,'mF':1e-3,'µF':1e-6,'nF':1e-9,'pF':1e-12,
+  'T':1,'mT':1e-3,
+  'kg':1,'g':1e-3,'mg':1e-6,'u':1.66e-27,
+  'A':1,'mA':1e-3,
+  's':1,'ms':1e-3,'µs':1e-6,'Ω':1,'kΩ':1e3,
+};
+
+// ===== STATION DATA =====
+const STATIONS = [
+// ────── MONTAG ──────
+{
+  id:'montag', day:'Montag', name:'CERN-Sch\u00fclerlabor', emoji:'⚛️',
+  job:'Teilchenphysiker/in', color:'#0891B2', theme:'theme-montag',
+  topic:'Coulombkraft & elektrische Feldst\u00e4rke',
+  intro:'Willkommen im CERN-Sch\u00fclerlabor! Hier untersuchst du die Wechselwirkung geladener Teilchen. Als Praktikant/in berechnest du Coulombkr\u00e4fte, elektrische Feldst\u00e4rken und die Arbeit im elektrischen Feld.',
+  tasks:[
+  {
+    type:'calc', title:'Auftrag 1 \u2013 Coulombkraft',
+    intro:'Dein erster Auftrag im Labor: Berechne die Kraft zwischen zwei geladenen Kugeln im Versuchsaufbau.',
+    text:'Zwei kleine Kugeln tragen die Ladungen q\u2081 = 3 nC und q\u2082 = 5 nC. Ihr Abstand betr\u00e4gt r = 10 cm. Berechne die Coulombkraft F.',
+    given:'q\u2081 = 3 nC &emsp; q\u2082 = 5 nC &emsp; r = 10 cm &emsp; k = 9\u00b710\u2079 Nm\u00b2/C\u00b2',
+    answerSI:13.5e-6, primaryValue:13.5, primaryUnit:'\u00b5N',
+    units:['\u00b5N','mN','N'], unitKeys:['µN','mN','N'],
+    hints:['Es gibt eine Formel, die die Kraft zwischen zwei Punktladungen beschreibt. Schau in deiner Formelsammlung nach \u2013 alle gegebenen Gr\u00f6\u00dfen kommen darin vor.'],
+    solutionSteps:['F = k \u00b7 q\u2081 \u00b7 q\u2082 / r\u00b2','F = 9\u00b710\u2079 \u00b7 3\u00b710\u207b\u2079 \u00b7 5\u00b710\u207b\u2079 / (0,1 m)\u00b2','F = 9\u00b710\u2079 \u00b7 15\u00b710\u207b\u00b9\u2078 / 0,01','F = 135\u00b710\u207b\u2079 / 0,01 = 13,5\u00b710\u207b\u2076 N','res:F = 13,5 \u00b5N'],
+    successMsg:'Richtig! Die Coulombkraft bei Nanocoloumb-Ladungen ist sehr klein.'
+  },
+  {
+    type:'calc', title:'Auftrag 2 \u2013 Abstand berechnen',
+    intro:'Zwei Proben mit bekannten Ladungen sollen so positioniert werden, dass eine bestimmte Kraft wirkt.',
+    text:'Zwischen zwei Ladungen q\u2081 = 1 \u00b5C und q\u2082 = 4 \u00b5C wirkt eine Kraft von F = 0,9 N. Wie gro\u00df ist ihr Abstand r?',
+    given:'q\u2081 = 1 \u00b5C &emsp; q\u2082 = 4 \u00b5C &emsp; F = 0,9 N',
+    answerSI:0.2, primaryValue:20, primaryUnit:'cm',
+    units:['mm','cm','m'], unitKeys:['mm','cm','m'],
+    hints:['Du kennst die Kraft und die Ladungen. Stelle die Kraft-Formel nach dem Abstand um.',
+           'Nach dem Umstellen steht r unter einer Wurzel. Vergiss die SI-Umrechnung nicht (\u00b5C \u2192 C, cm \u2192 m)!'],
+    solutionSteps:['Umstellen: r = \u221a(k \u00b7 q\u2081 \u00b7 q\u2082 / F)','r = \u221a(9\u00b710\u2079 \u00b7 4\u00b710\u207b\u00b9\u00b2 / 0,9)','r = \u221a(36\u00b710\u207b\u00b3 / 0,9) = \u221a(0,04)','res:r = 0,2 m = 20 cm'],
+    successMsg:'Genau! Das Coulombgesetz l\u00e4sst sich leicht nach r umstellen.'
+  },
+  {
+    type:'calc', title:'Auftrag 3 \u2013 Unbekannte Ladung',
+    intro:'Im Experiment wird gemessen, dass eine Ladung dreimal so gro\u00df ist wie die andere. Finde die kleinere Ladung!',
+    text:'Zwei Ladungen (q\u2082 = 3\u00b7q\u2081) haben den Abstand r = 10 cm. Die gemessene Kraft betr\u00e4gt F = 2,7 N. Berechne q\u2081.',
+    given:'q\u2082 = 3\u00b7q\u2081 &emsp; r = 10 cm &emsp; F = 2,7 N',
+    answerSI:1e-6, primaryValue:1, primaryUnit:'\u00b5C',
+    units:['nC','\u00b5C','mC'], unitKeys:['nC','µC','mC'],
+    hints:['Setze die Beziehung q\u2082 = 3\u00b7q\u2081 in das Coulombgesetz ein, sodass nur noch q\u2081 als Unbekannte \u00fcbrig bleibt.',
+           'Du erh\u00e4ltst eine Gleichung mit q\u2081\u00b2. L\u00f6se nach q\u2081\u00b2 auf und ziehe die Wurzel.'],
+    solutionSteps:['F = k \u00b7 q\u2081 \u00b7 3q\u2081 / r\u00b2 = 3k \u00b7 q\u2081\u00b2 / r\u00b2','q\u2081\u00b2 = F \u00b7 r\u00b2 / (3k) = 2,7 \u00b7 0,01 / (27\u00b710\u2079)','q\u2081\u00b2 = 0,027 / (27\u00b710\u2079) = 10\u207b\u00b9\u00b2','q\u2081 = 10\u207b\u2076 C','res:q\u2081 = 1 \u00b5C'],
+    successMsg:'Perfekt! Durch geschicktes Einsetzen l\u00e4sst sich die unbekannte Ladung bestimmen.'
+  },
+  {
+    type:'calc', title:'Auftrag 4 \u2013 Feldst\u00e4rke aus Kraft',
+    intro:'Ein Testk\u00f6rper im elektrischen Feld erf\u00e4hrt eine messbare Kraft. Bestimme die Feldst\u00e4rke!',
+    text:'Auf eine Probeladung q = 15 nC wirkt im elektrischen Feld eine Kraft F = 4,5 mN. Berechne die elektrische Feldst\u00e4rke E.',
+    given:'F = 4,5 mN &emsp; q = 15 nC',
+    answerSI:3e5, primaryValue:300, primaryUnit:'kV/m',
+    units:['V/m','kV/m','MV/m'], unitKeys:['V/m','kV/m','MV/m'],
+    hints:['Die elektrische Feldst\u00e4rke ist als Quotient zweier gegebener Gr\u00f6\u00dfen definiert. Schau in der Formelsammlung nach.'],
+    solutionSteps:['E = F / q','E = 4,5\u00b710\u207b\u00b3 / 15\u00b710\u207b\u2079','E = 0,3\u00b710\u2076 V/m','res:E = 300 kV/m'],
+    successMsg:'Richtig! Die Feldst\u00e4rke ist Kraft pro Ladung \u2013 eine zentrale Gr\u00f6\u00dfe.'
+  },
+  {
+    type:'calc', title:'Auftrag 5 \u2013 Feldst\u00e4rke im Kondensator',
+    intro:'Im Labor steht ein Plattenkondensator. Bestimme die Feldst\u00e4rke zwischen den Platten.',
+    text:'Ein Plattenkondensator hat den Plattenabstand d = 2 mm und liegt an U = 600 V. Wie gro\u00df ist E?',
+    given:'U = 600 V &emsp; d = 2 mm',
+    answerSI:3e5, primaryValue:300, primaryUnit:'kV/m',
+    units:['V/m','kV/m','MV/m'], unitKeys:['V/m','kV/m','MV/m'],
+    hints:['Im homogenen Feld gibt es eine einfache Formel f\u00fcr E, die nur U und d enth\u00e4lt.'],
+    solutionSteps:['E = U / d','E = 600 V / 0,002 m','res:E = 300 000 V/m = 300 kV/m'],
+    successMsg:'Genau! Im homogenen Feld gilt E = U/d.'
+  },
+  {
+    type:'calc', title:'Auftrag 6 \u2013 Arbeit im E-Feld',
+    intro:'Ein Ion wird durch eine Spannung beschleunigt. Berechne die verrichtete Arbeit!',
+    text:'Eine Ladung q = 5 nC wird durch eine Spannung U = 12 kV beschleunigt. Welche Arbeit W wird verrichtet?',
+    given:'q = 5 nC &emsp; U = 12 kV',
+    answerSI:6e-5, primaryValue:60, primaryUnit:'\u00b5J',
+    units:['\u00b5J','mJ','J'], unitKeys:['µJ','mJ','J'],
+    hints:['Welche Formel beschreibt die Arbeit, die an einer Ladung in einem elektrischen Feld verrichtet wird? Du brauchst nur zwei der gegebenen Gr\u00f6\u00dfen.'],
+    solutionSteps:['W = q \u00b7 U','W = 5\u00b710\u207b\u2079 \u00b7 12\u00b710\u00b3','W = 60\u00b710\u207b\u2076 J','res:W = 60 \u00b5J'],
+    successMsg:'Richtig! Die Arbeit im E-Feld h\u00e4ngt nur von Ladung und Spannung ab.'
+  },
+  {
+    type:'calc', title:'Auftrag 7 \u2013 Ladung aus Arbeit',
+    intro:'Im Experiment wurde die Arbeit gemessen. Bestimme daraus die transportierte Ladung!',
+    text:'Im homogenen Feld (E = 400 kV/m, d = 5 mm) wurde eine Arbeit W = 1,2 mJ verrichtet. Welche Ladung q wurde bewegt?',
+    given:'W = 1,2 mJ &emsp; E = 400 kV/m &emsp; d = 5 mm',
+    answerSI:6e-7, primaryValue:600, primaryUnit:'nC',
+    units:['nC','\u00b5C','mC'], unitKeys:['nC','µC','mC'],
+    hints:['Die Arbeit im homogenen Feld h\u00e4ngt von drei Gr\u00f6\u00dfen ab: Ladung, Feldst\u00e4rke und Weg. Stelle nach der gesuchten Gr\u00f6\u00dfe um.',
+           'Achte darauf, alle Einheiten in SI umzurechnen (mJ \u2192 J, kV/m \u2192 V/m, mm \u2192 m), bevor du einsetzt.'],
+    solutionSteps:['W = q \u00b7 E \u00b7 d \u2192 q = W / (E \u00b7 d)','q = 1,2\u00b710\u207b\u00b3 / (4\u00b710\u2075 \u00b7 5\u00b710\u207b\u00b3)','q = 1,2\u00b710\u207b\u00b3 / 2000','res:q = 6\u00b710\u207b\u2077 C = 600 nC'],
+    successMsg:'Perfekt! Geschickt umgestellt und korrekt berechnet.'
+  }
+  ]
+},
+// ────── DIENSTAG ──────
+{
+  id:'dienstag', day:'Dienstag', name:'Ingenieurb\u00fcro Kondensatortechnik', emoji:'🔋',
+  job:'Elektroingenieur/in', color:'#2563EB', theme:'theme-dienstag',
+  topic:'Plattenkondensator: C, U, Q, E, Energie',
+  intro:'Im Ingenieurb\u00fcro entwirfst du Kondensatoren f\u00fcr verschiedene Anwendungen \u2013 von Defibrillatoren bis Filterschaltungen. Berechne Kapazit\u00e4t, Ladung, Energie und Feldst\u00e4rke!',
+  tasks:[
+  {
+    type:'calc', title:'Auftrag 1 \u2013 Kapazit\u00e4t berechnen',
+    intro:'Ein Kunde ben\u00f6tigt einen luftgef\u00fcllten Plattenkondensator. Berechne die Kapazit\u00e4t!',
+    text:'Ein Plattenkondensator hat die Fl\u00e4che A = 200 cm\u00b2 und den Plattenabstand d = 1,0 mm. Berechne die Kapazit\u00e4t C.',
+    given:'A = 200 cm\u00b2 &emsp; d = 1,0 mm &emsp; \u03b5\u2080 = 8,85\u00b710\u207b\u00b9\u00b2 F/m',
+    answerSI:177e-12, primaryValue:177, primaryUnit:'pF',
+    units:['pF','nF','\u00b5F'], unitKeys:['pF','nF','µF'],
+    hints:['Suche in der Formelsammlung die Formel, die die Kapazit\u00e4t mit den geometrischen Daten des Plattenkondensators verkn\u00fcpft.',
+           'Achtung bei der Fl\u00e4chenumrechnung: 1 cm\u00b2 ist nicht 0,01 m\u00b2! \u00dcberlege: 1 cm = 0,01 m, also 1 cm\u00b2 = (0,01)\u00b2 m\u00b2.'],
+    solutionSteps:['A = 200 cm\u00b2 = 0,02 m\u00b2, d = 0,001 m','C = \u03b5\u2080 \u00b7 A / d = 8,85\u00b710\u207b\u00b9\u00b2 \u00b7 0,02 / 0,001','C = 8,85\u00b710\u207b\u00b9\u00b2 \u00b7 20 = 177\u00b710\u207b\u00b9\u00b2 F','res:C = 177 pF'],
+    successMsg:'Richtig! Ein typischer Wert f\u00fcr einen kleinen Luftkondensator.'
+  },
+  {
+    type:'calc', title:'Auftrag 2 \u2013 Ladung berechnen',
+    intro:'Wie viel Ladung kann der Kondensator bei einer bestimmten Spannung speichern?',
+    text:'Ein Kondensator mit C = 100 nF wird auf U = 50 V aufgeladen. Berechne die gespeicherte Ladung Q.',
+    given:'C = 100 nF &emsp; U = 50 V',
+    answerSI:5e-6, primaryValue:5, primaryUnit:'\u00b5C',
+    units:['nC','\u00b5C','mC'], unitKeys:['nC','µC','mC'],
+    hints:['Es gibt eine einfache Formel, die Ladung, Kapazit\u00e4t und Spannung verkn\u00fcpft.'],
+    solutionSteps:['Q = C \u00b7 U','Q = 100\u00b710\u207b\u2079 \u00b7 50 = 5000\u00b710\u207b\u2079 C','res:Q = 5 \u00b5C'],
+    successMsg:'Genau! Q = C \u00b7 U \u2013 die Grundformel des Kondensators.'
+  },
+  {
+    type:'calc', title:'Auftrag 3 \u2013 Energie im Defibrillator',
+    intro:'Ein Defibrillator speichert Energie in einem Kondensator. Berechne die Energie f\u00fcr einen Stromscho\u00df!',
+    text:'Der Kondensator eines Defibrillators hat C = 470 \u00b5F und wird auf U = 400 V aufgeladen. Welche Energie W ist gespeichert?',
+    given:'C = 470 \u00b5F &emsp; U = 400 V',
+    answerSI:37.6, primaryValue:37.6, primaryUnit:'J',
+    units:['mJ','J','kJ'], unitKeys:['mJ','J','kJ'],
+    hints:['Wie berechnet man die im Kondensator gespeicherte Energie? Suche die Formel mit C und U.'],
+    solutionSteps:['W = \u00bd \u00b7 C \u00b7 U\u00b2','W = 0,5 \u00b7 470\u00b710\u207b\u2076 \u00b7 160 000','W = 0,5 \u00b7 75,2','res:W = 37,6 J'],
+    successMsg:'Richtig! Diese Energie reicht aus, um ein Herz wieder in den richtigen Rhythmus zu bringen.'
+  },
+  {
+    type:'calc', title:'Auftrag 4 \u2013 Feldst\u00e4rke',
+    intro:'Wie gro\u00df ist die Feldst\u00e4rke in einem Kondensator f\u00fcr die Displaytechnik?',
+    text:'Ein Kondensator mit d = 0,5 mm liegt an U = 230 V. Berechne E.',
+    given:'U = 230 V &emsp; d = 0,5 mm',
+    answerSI:460000, primaryValue:460, primaryUnit:'kV/m',
+    units:['V/m','kV/m','MV/m'], unitKeys:['V/m','kV/m','MV/m'],
+    hints:['Die Feldst\u00e4rke im Plattenkondensator l\u00e4sst sich direkt aus Spannung und Abstand berechnen.'],
+    solutionSteps:['E = U / d = 230 / 0,0005','res:E = 460 000 V/m = 460 kV/m'],
+    successMsg:'Genau! Selbst niedrige Spannungen erzeugen bei kleinem Abstand hohe Feldst\u00e4rken.'
+  },
+  {
+    type:'table', title:'Auftrag 5 \u2013 Plattenabstand vergr\u00f6\u00dfern (mit Quelle)',
+    intro:'Ein Entwickler fragt: Was passiert mit den Gr\u00f6\u00dfen, wenn der Abstand bei angeschlossener Spannungsquelle verdoppelt wird?',
+    text:'Der Plattenabstand eines Kondensators wird verdoppelt. Die Spannungsquelle <strong>bleibt angeschlossen</strong> (U = const). Wie \u00e4ndern sich die Gr\u00f6\u00dfen?',
+    given:'d\' = 2d &emsp; Spannungsquelle angeschlossen (U = const)',
+    tableScenario:'mit_quelle',
+    rows:[
+      {label:'Kapazit\u00e4t C', correct:'sinkt', explain:'C = \u03b5\u2080A/d \u2192 d verdoppelt \u2192 C halbiert'},
+      {label:'Spannung U', correct:'bleibt gleich', explain:'Spannungsquelle h\u00e4lt U = const'},
+      {label:'Ladung Q', correct:'sinkt', explain:'Q = CU, C sinkt, U const \u2192 Q sinkt'},
+      {label:'Feldst\u00e4rke E', correct:'sinkt', explain:'E = U/d, U const, d verdoppelt \u2192 E halbiert'}
+    ],
+    freetextPrompt:'Begr\u00fcnde in 1\u20132 S\u00e4tzen, warum Q sinkt, obwohl U gleich bleibt.',
+    modelSolution:'Da die Spannungsquelle angeschlossen bleibt, ist U konstant. Durch die Vergr\u00f6\u00dferung von d sinkt die Kapazit\u00e4t (C = \u03b5\u2080A/d). Weil Q = C\u00b7U und C kleiner wird bei konstantem U, muss auch die Ladung Q sinken \u2013 Ladung flie\u00dft zur Quelle zur\u00fcck.',
+    hints:['Was bleibt konstant, wenn die Quelle angeschlossen ist? Die <strong>Spannung U</strong>.','Welche Formel verkn\u00fcpft C und d? \u2192 C = \u03b5\u2080A/d'],
+    successMsg:'Alle Zeilen korrekt! Die angeschlossene Quelle h\u00e4lt U konstant.'
+  },
+  {
+    type:'table', title:'Auftrag 6 \u2013 Plattenabstand vergr\u00f6\u00dfern (ohne Quelle)',
+    intro:'Nun der zweite Fall: Die Spannungsquelle wird vorher abgetrennt!',
+    text:'Der gleiche Kondensator wird zuerst aufgeladen, dann von der Quelle <strong>getrennt</strong>. Danach wird d verdoppelt. Wie \u00e4ndern sich die Gr\u00f6\u00dfen?',
+    given:'d\' = 2d &emsp; Spannungsquelle getrennt (Q = const)',
+    tableScenario:'ohne_quelle',
+    rows:[
+      {label:'Kapazit\u00e4t C', correct:'sinkt', explain:'C = \u03b5\u2080A/d \u2192 d verdoppelt \u2192 C halbiert'},
+      {label:'Spannung U', correct:'steigt', explain:'U = Q/C, Q const, C sinkt \u2192 U steigt'},
+      {label:'Ladung Q', correct:'bleibt gleich', explain:'Keine Quelle \u2192 Ladung kann nicht abflie\u00dfen'},
+      {label:'Feldst\u00e4rke E', correct:'bleibt gleich', explain:'E = Q/(\u03b5\u2080A) \u2013 unabh\u00e4ngig von d!'}
+    ],
+    freetextPrompt:'Erkl\u00e4re, warum E trotz Verdopplung von d gleich bleibt.',
+    modelSolution:'Ohne Spannungsquelle bleibt die Ladung Q auf den Platten konstant. Die Feldst\u00e4rke l\u00e4sst sich auch schreiben als E = \u03c3/\u03b5\u2080 = Q/(\u03b5\u2080\u00b7A). Da weder Q noch A sich \u00e4ndern, bleibt E konstant. Alternativ: E = U/d, aber sowohl U als auch d verdoppeln sich \u2013 der Quotient bleibt gleich.',
+    hints:['Was bleibt konstant, wenn die Quelle getrennt ist? Die <strong>Ladung Q</strong>.','E kann man auch schreiben als E = Q/(\u03b5\u2080\u00b7A) \u2013 wo kommt d vor?'],
+    successMsg:'Perfekt! Ohne Quelle bleibt Q konstant \u2013 ein h\u00e4ufiges Pr\u00fcfungsthema!'
+  },
+  {
+    type:'combo', title:'Auftrag 7 \u2013 Ladekurve',
+    intro:'Ein Kunde fragt: Warum l\u00e4dt sich sein Kondensator nicht sofort auf?',
+    text:'Beschreibe den Verlauf der Ladekurve Q(t) eines Kondensators.',
+    mcQuestion:'Warum flacht die Ladekurve Q(t) beim Laden ab?',
+    mcOptions:[
+      'Der Strom bleibt w\u00e4hrend des gesamten Ladevorgangs konstant',
+      'Die Spannung am Kondensator n\u00e4hert sich der Quellspannung \u2013 der Ladestrom sinkt',
+      'Der ohmsche Widerstand des Drahtes erh\u00f6ht sich',
+      'Die Kapazit\u00e4t des Kondensators nimmt w\u00e4hrend des Ladens ab'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Beschreibe den Ladeverlauf Q(t) in eigenen Worten.',
+    modelSolution:'Beim Laden flie\u00dft anfangs ein gro\u00dfer Strom, da die Spannung am Kondensator noch null ist und die gesamte Quellspannung am Widerstand abf\u00e4llt. Mit zunehmender Ladung steigt die Kondensatorspannung, die Spannungsdifferenz wird kleiner, der Strom nimmt ab. Q(t) ist eine exponentiell ansteigende Kurve, die sich asymptotisch dem Maximalwert Q_max = C\u00b7U n\u00e4hert.',
+    showSvg:'charge_curve',
+    hints:['Denke an den Zusammenhang: Strom = Spannungsdifferenz / Widerstand','Was passiert mit dem Strom, wenn die Kondensatorspannung fast gleich der Quellspannung ist?'],
+    successMsg:'Sehr gut verstanden!'
+  }
+  ]
+},
+// ────── MITTWOCH ──────
+{
+  id:'mittwoch', day:'Mittwoch', name:'Teilchenbeschleuniger-Zentrum', emoji:'⚡',
+  job:'Beschleuniger-Physiker/in', color:'#4F46E5', theme:'theme-mittwoch',
+  topic:'Bewegung geladener Teilchen im E-Feld',
+  intro:'Am Teilchenbeschleuniger lernst du, wie geladene Teilchen in elektrischen Feldern beschleunigt werden. Du berechnest Geschwindigkeiten, Kr\u00e4fte und Beschleunigungen \u2013 alles im L\u00e4ngsfeld!',
+  tasks:[
+  {
+    type:'calc', title:'Auftrag 1 \u2013 Endgeschwindigkeit (K\u00fcgelchen)',
+    intro:'Ein geladenes K\u00fcgelchen wird durch eine Spannung beschleunigt. Wie schnell wird es?',
+    text:'Ein K\u00fcgelchen (m = 2 g, q = 4 \u00b5C) wird aus der Ruhe durch U = 500 V beschleunigt. Berechne die Endgeschwindigkeit v.',
+    given:'m = 2 g &emsp; q = 4 \u00b5C &emsp; U = 500 V &emsp; v\u2080 = 0',
+    answerSI:1.414, primaryValue:1.41, primaryUnit:'m/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Welche Energie hat das K\u00fcgelchen vorher (elektrisch), welche nachher (kinetisch)? Setze beide gleich und l\u00f6se nach v auf.'],
+    solutionSteps:['Energieerhaltung: q\u00b7U = \u00bd\u00b7m\u00b7v\u00b2','v = \u221a(2qU/m) = \u221a(2 \u00b7 4\u00b710\u207b\u2076 \u00b7 500 / 0,002)','v = \u221a(4\u00b710\u207b\u00b3/2\u00b710\u207b\u00b3) = \u221a(2)','res:v \u2248 1,41 m/s'],
+    successMsg:'Richtig! Die Energieerhaltung ist der Schl\u00fcssel zur Geschwindigkeit.'
+  },
+  {
+    type:'calc', title:'Auftrag 2 \u2013 Beschleunigung',
+    intro:'Wie stark wird ein Staubpartikel im Kondensator beschleunigt?',
+    text:'Ein geladenes Partikel (m = 0,1 mg, q = 2 nC) befindet sich in einem Kondensator (U = 2000 V, d = 4 cm). Berechne die Beschleunigung a.',
+    given:'m = 0,1 mg &emsp; q = 2 nC &emsp; U = 2000 V &emsp; d = 4 cm',
+    answerSI:1000, primaryValue:1000, primaryUnit:'m/s\u00b2',
+    units:['m/s\u00b2'], unitKeys:['m/s²'],
+    hints:['Du brauchst drei Schritte: Erst die Feldst\u00e4rke, dann die Kraft, dann die Beschleunigung. Suche die passenden Formeln.',
+           'Achte auf die Einheiten: mg \u2192 kg, nC \u2192 C, cm \u2192 m. Die Zehnerpotenzen sind die gr\u00f6\u00dfte Fehlerquelle!'],
+    solutionSteps:['E = U/d = 2000/0,04 = 50 000 V/m','F = q\u00b7E = 2\u00b710\u207b\u2079 \u00b7 50 000 = 10\u207b\u2074 N','a = F/m = 10\u207b\u2074 / 10\u207b\u2077','res:a = 1000 m/s\u00b2'],
+    successMsg:'Genau! F\u00fcr winzige Teilchen k\u00f6nnen elektrische Felder enorme Beschleunigungen erzeugen.'
+  },
+  {
+    type:'calc', title:'Auftrag 3 \u2013 Proton im Beschleuniger',
+    intro:'Ein Proton wird durch eine Beschleunigungsspannung beschleunigt. Berechne seine Geschwindigkeit!',
+    text:'Ein Proton (m = 1,67\u00b710\u207b\u00b2\u2077 kg, q = 1,6\u00b710\u207b\u00b9\u2079 C) wird durch U = 1000 V beschleunigt. Berechne v in km/s.',
+    given:'m<sub>p</sub> = 1,67\u00b710\u207b\u00b2\u2077 kg &emsp; q = 1,6\u00b710\u207b\u00b9\u2079 C &emsp; U = 1000 V',
+    answerSI:438000, primaryValue:438, primaryUnit:'km/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Gleicher Ansatz wie Aufgabe 1 \u2013 aber jetzt mit den Werten eines Protons. Ergebnis in km/s angeben!'],
+    solutionSteps:['v = \u221a(2qU/m)','v = \u221a(2 \u00b7 1,6\u00b710\u207b\u00b9\u2079 \u00b7 1000 / 1,67\u00b710\u207b\u00b2\u2077)','v = \u221a(3,2\u00b710\u207b\u00b9\u2076 / 1,67\u00b710\u207b\u00b2\u2077) = \u221a(1,916\u00b710\u00b9\u00b9)','v \u2248 437 700 m/s','res:v \u2248 438 km/s'],
+    successMsg:'Richtig! Ein Proton bei 1000 V erreicht bereits knapp 440 km/s.'
+  },
+  {
+    type:'calc', title:'Auftrag 4 \u2013 Masse bestimmen',
+    intro:'Ein unbekanntes Ion wurde beschleunigt. Bestimme aus der Geschwindigkeit seine Masse!',
+    text:'Ein zweifach geladenes Ion (q = 3,2\u00b710\u207b\u00b9\u2079 C) erreicht nach U = 1000 V die Geschwindigkeit v = 310 km/s. Bestimme die Masse in u (1 u = 1,66\u00b710\u207b\u00b2\u2077 kg).',
+    given:'q = 3,2\u00b710\u207b\u00b9\u2079 C &emsp; U = 1000 V &emsp; v = 310 km/s &emsp; 1 u = 1,66\u00b710\u207b\u00b2\u2077 kg',
+    answerSI:6.64e-27, primaryValue:4, primaryUnit:'u',
+    units:['u','kg'], unitKeys:['u','kg'],
+    hints:['Du kennst v, q und U. Stelle den Energieerhaltungssatz diesmal nach m um.',
+           'Vergiss nicht, km/s in m/s umzurechnen, bevor du quadrierst! Am Ende: kg in u umrechnen.'],
+    solutionSteps:['m = 2qU/v\u00b2','m = 2 \u00b7 3,2\u00b710\u207b\u00b9\u2079 \u00b7 1000 / (3,1\u00b710\u2075)\u00b2','m = 6,4\u00b710\u207b\u00b9\u2076 / 9,61\u00b710\u00b9\u2070 = 6,66\u00b710\u207b\u00b2\u2077 kg','m = 6,66\u00b710\u207b\u00b2\u2077 / 1,66\u00b710\u207b\u00b2\u2077 \u2248 4 u','res:m \u2248 4 u (Helium-Ion He\u00b2\u207a)'],
+    successMsg:'Perfekt! Es handelt sich um ein Helium-Ion \u2013 so funktioniert ein Massenspektrometer!'
+  },
+  {
+    type:'combo', title:'Auftrag 5 \u2013 Bewegungsart im L\u00e4ngsfeld',
+    intro:'Beschreibe die Bewegung eines geladenen Teilchens im homogenen elektrischen L\u00e4ngsfeld.',
+    text:'Ein positives Ion tritt in ein homogenes E-Feld ein, das in Bewegungsrichtung zeigt.',
+    mcQuestion:'Welche Bewegungsart liegt vor?',
+    mcOptions:[
+      'Gleichf\u00f6rmige Bewegung (v = const)',
+      'Gleichm\u00e4\u00dfig beschleunigte Bewegung',
+      'Gleichm\u00e4\u00dfig verz\u00f6gerte Bewegung',
+      'Kreisbewegung'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Begr\u00fcnde: Warum ist die Beschleunigung konstant?',
+    modelSolution:'Im homogenen E-Feld ist die Feldst\u00e4rke E \u00fcberall gleich gro\u00df. Daher wirkt auf das geladene Teilchen eine konstante Kraft F = q\u00b7E. Nach Newtons 2. Gesetz (F = m\u00b7a) ergibt eine konstante Kraft bei konstanter Masse eine konstante Beschleunigung. Es handelt sich also um eine gleichm\u00e4\u00dfig beschleunigte Bewegung \u2013 analog zum freien Fall im Gravitationsfeld.',
+    hints:['Was bewirkt eine konstante Kraft auf ein Teilchen?','Vergleiche mit dem freien Fall: Dort ist g = const, hier ist E = const.'],
+    successMsg:'Richtig! Konstantes E-Feld \u2192 konstante Kraft \u2192 gleichm\u00e4\u00dfig beschleunigte Bewegung.'
+  },
+  {
+    type:'calc', title:'Auftrag 6 \u2013 K\u00fcgelchen im Kondensator',
+    intro:'Ein geladenes K\u00fcgelchen startet an einer Platte und wird zur anderen beschleunigt.',
+    text:'Ein K\u00fcgelchen (m = 5 mg, q = 0,5 \u00b5C) startet aus der Ruhe in einem Kondensator (U = 1000 V, d = 10 cm). Berechne die Endgeschwindigkeit v beim Erreichen der anderen Platte.',
+    given:'m = 5 mg &emsp; q = 0,5 \u00b5C &emsp; U = 1000 V &emsp; d = 10 cm',
+    answerSI:14.14, primaryValue:14.1, primaryUnit:'m/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Der Energieerhaltungssatz liefert v direkt \u2013 du brauchst weder E noch a zu berechnen.',
+           'Auch d wird nicht ben\u00f6tigt! Nur q, U und m gehen in die Formel ein.'],
+    solutionSteps:['Energieerhaltung: q\u00b7U = \u00bd\u00b7m\u00b7v\u00b2','v = \u221a(2qU/m)','v = \u221a(2 \u00b7 5\u00b710\u207b\u2077 \u00b7 1000 / 5\u00b710\u207b\u2076)','v = \u221a(10\u207b\u00b3 / 5\u00b710\u207b\u2076) = \u221a(200)','res:v \u2248 14,1 m/s'],
+    successMsg:'Genau! Die Energieerhaltung liefert direkt v, ohne den Umweg \u00fcber a und t.'
+  },
+  {
+    type:'calc', title:'Auftrag 7 \u2013 Elektronenvolt (eV)',
+    intro:'Am Beschleuniger wird die Energie der Teilchen h\u00e4ufig in Elektronenvolt angegeben. Rechne um!',
+    text:'Ein Elektron (q = 1,6\u00b710\u207b\u00b9\u2079 C) wird durch eine Spannung U = 800 V beschleunigt.<br><br>a) Welche kinetische Energie in Joule hat es danach?<br>b) Wie viel ist das in Elektronenvolt (eV)?<br><br><em>Hinweis: 1 eV = 1,6\u00b710\u207b\u00b9\u2079 J \u2013 das ist die Energie, die eine Elementarladung beim Durchlaufen von 1 V aufnimmt.</em><br><br>Gib die Energie in <strong>eV</strong> ein.',
+    given:'q = e = 1,6\u00b710\u207b\u00b9\u2079 C &emsp; U = 800 V &emsp; 1 eV = 1,6\u00b710\u207b\u00b9\u2079 J',
+    answerSI:1.28e-16, primaryValue:800, primaryUnit:'eV',
+    units:['J','eV'], unitKeys:['J','eV'],
+    hints:['Berechne zuerst W in Joule mit der Formel f\u00fcr Arbeit im E-Feld. Dann rechne in eV um mithilfe der Definition im Aufgabentext.'],
+    solutionSteps:['W = q \u00b7 U = 1,6\u00b710\u207b\u00b9\u2079 C \u00b7 800 V = 1,28\u00b710\u207b\u00b9\u2076 J','Umrechnung: W = 1,28\u00b710\u207b\u00b9\u2076 J / 1,6\u00b710\u207b\u00b9\u2079 J/eV','res:W = 800 eV \u2013 Ein Elektron bei U Volt hat immer genau U Elektronenvolt!'],
+    successMsg:'Perfekt! Wichtige Erkenntnis: Ein Elektron, das U Volt durchl\u00e4uft, erh\u00e4lt genau U eV Energie.'
+  }
+  ]
+},
+// ────── DONNERSTAG ──────
+{
+  id:'donnerstag', day:'Donnerstag', name:'Elektromotoren-Labor & MRT-Klinik', emoji:'🧲',
+  job:'Elektroingenieur/in & Medizinphysiker/in', color:'#EA580C', theme:'theme-donnerstag',
+  topic:'Magnetfeld & Lorentzkraft',
+  intro:'Heute arbeitest du mit Magnetfeldern! Im Motorenlabor untersuchst du die Lorentzkraft, in der MRT-Klinik lernst du \u00fcber Magnetfelder in der Medizin.',
+  tasks:[
+  {
+    type:'mc', title:'Auftrag 1 \u2013 Lorentzkraft-Richtung',
+    intro:'Bestimme die Richtung der Lorentzkraft auf ein geladenes Teilchen!',
+    text:'Ein <strong>positiv</strong> geladenes Teilchen bewegt sich nach <strong>rechts (\u2192)</strong>. Das Magnetfeld zeigt <strong>in die Zeichenebene (\u2297)</strong>. In welche Richtung wirkt die Lorentzkraft?<br><br><em>Tipp: Nutze die Drei-Finger-Regel der rechten Hand (Daumen = v, Zeigefinger = B, Mittelfinger = F).</em>',
+    mcOptions:['Nach links (\u2190)','Nach rechts (\u2192)','Nach oben (\u2191)','Nach unten (\u2193)','In die Seite (\u2297)','Aus der Seite (\u2299)'],
+    mcCorrect:2,
+    explanation:'Drei-Finger-Regel: Daumen nach rechts (v), Zeigefinger in die Seite (B) \u2192 Mittelfinger zeigt nach oben. F = q(v \u00d7 B): rechts \u00d7 (in die Seite) = oben.',
+    showSvg:'lorentz_up',
+    hints:['Rechte Hand: Daumen = Geschwindigkeit, Zeigefinger = B-Feld, Mittelfinger = Kraft','v nach rechts, B in die Zeichenebene \u2192 F zeigt ...?'],
+    successMsg:'Richtig! Die Lorentzkraft steht immer senkrecht auf v und B.'
+  },
+  {
+    type:'mc', title:'Auftrag 2 \u2013 Magnetfeldarten',
+    intro:'Unterscheide verschiedene Magnetfeldtypen!',
+    text:'Welches der folgenden Magnetfelder ist <strong>homogen</strong> (gleichm\u00e4\u00dfig)?',
+    mcOptions:[
+      'Feld eines Stabmagneten',
+      'Feld im Inneren einer langen Spule',
+      'Feld um einen geraden stromdurchflossenen Leiter',
+      'Feld der Erde'
+    ],
+    mcCorrect:1,
+    explanation:'Im Inneren einer langen Spule verlaufen die Feldlinien parallel und mit gleichem Abstand \u2013 das Feld ist dort homogen. Stabmagnet, Leiter und Erde haben inhomogene Felder.',
+    hints:['Homogen = Feldlinien parallel und gleicher Abstand.','Wo verlaufen Feldlinien besonders gleichm\u00e4\u00dfig?'],
+    successMsg:'Genau! Die lange Spule erzeugt in ihrem Inneren ein nahezu homogenes Feld.'
+  },
+  {
+    type:'mc', title:'Auftrag 3 \u2013 Feldlinienbild zuordnen',
+    intro:'Ordne die Beschreibung dem richtigen Feldlinienbild zu!',
+    text:'Welche Beschreibung passt zum Feldlinienbild eines <strong>Hufeisenmagneten</strong>?',
+    mcOptions:[
+      'Radiale Linien, die von einem Punkt ausgehen',
+      'Geschlossene Schleifen um einen geraden Leiter',
+      'Nahezu parallele Linien zwischen den Polen',
+      'Kreisf\u00f6rmige Linien mit abnehmendem Abstand'
+    ],
+    mcCorrect:2,
+    explanation:'Zwischen den Polen eines Hufeisenmagneten verlaufen die Feldlinien nahezu parallel \u2013 \u00e4hnlich einem Plattenkondensator. Au\u00dferhalb kr\u00fcmmen sich die Linien von Nord- zu S\u00fcdpol.',
+    showSvg:'horseshoe',
+    hints:['Denke an die Form des Hufeisenmagneten: zwei parallele Pole gegen\u00fcber.','Zwischen den Polen \u2013 ist das Feld dort eher gleichm\u00e4\u00dfig oder ungleichm\u00e4\u00dfig?'],
+    successMsg:'Richtig! Das Feld zwischen den Polen ist n\u00e4herungsweise homogen.'
+  },
+  {
+    type:'calc', title:'Auftrag 4 \u2013 Lorentzkraft berechnen',
+    intro:'Berechne die Kraft auf ein geladenes Objekt im Magnetfeld!',
+    text:'Eine geladene Kugel (q = 5 \u00b5C) bewegt sich mit v = 30 m/s senkrecht durch ein Magnetfeld B = 0,4 T. Berechne die Lorentzkraft F.',
+    given:'q = 5 \u00b5C &emsp; v = 30 m/s &emsp; B = 0,4 T &emsp; v \u22a5 B',
+    answerSI:6e-5, primaryValue:60, primaryUnit:'\u00b5N',
+    units:['\u00b5N','mN','N'], unitKeys:['µN','mN','N'],
+    hints:['Suche in der Formelsammlung die Formel f\u00fcr die Lorentzkraft. Alle drei gegebenen Gr\u00f6\u00dfen kommen darin vor.'],
+    solutionSteps:['F = q \u00b7 v \u00b7 B (v \u22a5 B)','F = 5\u00b710\u207b\u2076 \u00b7 30 \u00b7 0,4','F = 60\u00b710\u207b\u2076 N','res:F = 60 \u00b5N'],
+    successMsg:'Richtig! F = qvB gilt, wenn v senkrecht auf B steht.'
+  },
+  {
+    type:'calc', title:'Auftrag 5 \u2013 Geschwindigkeit aus Lorentzkraft',
+    intro:'Aus der gemessenen Kraft soll die Geschwindigkeit bestimmt werden.',
+    text:'Auf eine Ladung q = 8 \u00b5C wirkt im Magnetfeld B = 0,5 T eine Lorentzkraft F = 1,2 mN. Wie schnell bewegt sich die Ladung?',
+    given:'F = 1,2 mN &emsp; q = 8 \u00b5C &emsp; B = 0,5 T &emsp; v \u22a5 B',
+    answerSI:300, primaryValue:300, primaryUnit:'m/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Du kennst die Lorentzkraft-Formel. Stelle sie diesmal nach v um.'],
+    solutionSteps:['v = F / (q \u00b7 B)','v = 1,2\u00b710\u207b\u00b3 / (8\u00b710\u207b\u2076 \u00b7 0,5)','v = 1,2\u00b710\u207b\u00b3 / 4\u00b710\u207b\u2076','res:v = 300 m/s'],
+    successMsg:'Genau! Die Lorentzkraft erm\u00f6glicht die Geschwindigkeitsbestimmung.'
+  },
+  {
+    type:'calc', title:'Auftrag 6 \u2013 Flussdichte bestimmen',
+    intro:'Bestimme die magnetische Flussdichte aus einer Kraftmessung!',
+    text:'Eine Ladung q = 10 \u00b5C bewegt sich mit v = 50 m/s senkrecht zum Magnetfeld. Die gemessene Kraft betr\u00e4gt F = 0,15 mN. Wie gro\u00df ist B?',
+    given:'F = 0,15 mN &emsp; q = 10 \u00b5C &emsp; v = 50 m/s',
+    answerSI:0.3, primaryValue:0.3, primaryUnit:'T',
+    units:['mT','T'], unitKeys:['mT','T'],
+    hints:['Stelle die Lorentzkraft-Formel nach der gesuchten Gr\u00f6\u00dfe B um.'],
+    solutionSteps:['B = F / (q \u00b7 v)','B = 1,5\u00b710\u207b\u2074 / (10\u207b\u2075 \u00b7 50)','B = 1,5\u00b710\u207b\u2074 / 5\u00b710\u207b\u2074','res:B = 0,3 T'],
+    successMsg:'Richtig! 0,3 T \u2013 ein typischer Wert f\u00fcr einen Elektromagneten.'
+  },
+  {
+    type:'combo', title:'Auftrag 7 \u2013 MRT: Ionen im Magnetfeld',
+    intro:'In der MRT-Klinik: Wie wirkt das Magnetfeld auf Ionen im K\u00f6rper?',
+    text:'Im MRT-Ger\u00e4t (B = 3 T) bewegen sich Natrium-Ionen (Na\u207a) durch das Blut. Die Ionen sind positiv geladen und bewegen sich nach oben (\u2191). Das B-Feld zeigt aus der Seite heraus (\u2299).',
+    mcQuestion:'In welche Richtung wirkt die Lorentzkraft auf die Na\u207a-Ionen?',
+    mcOptions:['Nach links (\u2190)','Nach rechts (\u2192)','Nach oben (\u2191)','Nach unten (\u2193)','In die Seite (\u2297)','Aus der Seite (\u2299)'],
+    mcCorrect:0,
+    freetextPrompt:'Erkl\u00e4re, warum die Lorentzkraft in der Praxis keine sp\u00fcrbaren Auswirkungen auf den K\u00f6rper hat.',
+    modelSolution:'Die Lorentzkraft auf einzelne Ionen ist extrem klein (ca. 10\u207b\u00b9\u2076 N), da die Ionenladung winzig ist und die thermische Geschwindigkeit der Ionen gering. Zudem bewegen sich die Ionen in alle Richtungen zuf\u00e4llig, sodass sich die Kr\u00e4fte im Mittel aufheben. Die Kraft ist viel zu klein, um biologische Wirkungen zu entfalten.',
+    showSvg:'lorentz_left',
+    hints:['Drei-Finger-Regel: v nach oben, B aus der Seite heraus \u2192 F zeigt ...?','Denke an die Gr\u00f6\u00dfenordnung: q eines Ions ist ca. 1,6\u00b710\u207b\u00b9\u2079 C.'],
+    successMsg:'Richtig! v \u00d7 B: oben \u00d7 (aus der Seite) = links.'
+  }
+  ]
+},
+// ────── FREITAG ──────
+{
+  id:'freitag', day:'Freitag', name:'Navigationszentrum & ESA-Raumfahrt', emoji:'🌍',
+  job:'Navigator/in & Raumfahrtingenieur/in', color:'#15803D', theme:'theme-freitag',
+  topic:'Erdmagnetfeld: Deklination, Inklination, Entstehung',
+  intro:'Am letzten Tag arbeitest du beim Navigationszentrum und der ESA. Du besch\u00e4ftigst dich mit dem Erdmagnetfeld, das f\u00fcr Navigation und den Schutz der Erde unverzichtbar ist.',
+  tasks:[
+  {
+    type:'combo', title:'Auftrag 1 \u2013 Deklination',
+    intro:'Als Navigator musst du die Deklination verstehen \u2013 sie ist entscheidend f\u00fcr pr\u00e4zise Navigation!',
+    text:'Die Kompassnadel zeigt nicht genau nach Norden.',
+    mcQuestion:'Was beschreibt die magnetische Deklination?',
+    mcOptions:[
+      'Den Winkel zwischen der Kompassnadel und der Horizontalen',
+      'Den Winkel zwischen magnetisch Nord und geographisch Nord',
+      'Die St\u00e4rke des Erdmagnetfeldes an einem Ort',
+      'Die Geschwindigkeit, mit der sich der magnetische Pol bewegt'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Erkl\u00e4re in 1\u20132 S\u00e4tzen, warum die Deklination an verschiedenen Orten der Erde unterschiedlich ist.',
+    modelSolution:'Die Deklination ist ortsabh\u00e4ngig, weil der magnetische Nordpol nicht mit dem geographischen Nordpol zusammenf\u00e4llt. Je nachdem, wo man sich auf der Erde befindet, ist der Winkel zwischen der Richtung zum geographischen und zum magnetischen Pol unterschiedlich gro\u00df. Au\u00dferdem \u00e4ndert sich die Deklination im Laufe der Zeit, da der magnetische Pol wandert.',
+    hints:['Wo befindet sich der magnetische Nordpol im Vergleich zum geographischen?','Die Deklination h\u00e4ngt vom Standort ab \u2013 in Deutschland betr\u00e4gt sie ca. 2\u00b0\u20134\u00b0.'],
+    successMsg:'Richtig! Die Deklination ist die Abweichung zwischen magnetisch und geographisch Nord.'
+  },
+  {
+    type:'combo', title:'Auftrag 2 \u2013 Inklination',
+    intro:'F\u00fcr die Satellitennavigation ist auch die Inklination wichtig.',
+    text:'Neben der Deklination gibt es noch einen weiteren Winkel des Erdmagnetfeldes.',
+    mcQuestion:'Wo betr\u00e4gt die Inklination (Neigungswinkel der Feldlinien) genau 90\u00b0?',
+    mcOptions:[
+      'Am \u00c4quator',
+      'An den magnetischen Polen',
+      'An den Wendekreisen',
+      '\u00dcberall gleich'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Beschreibe, wie sich die Inklination vom \u00c4quator zu den Polen \u00e4ndert und warum.',
+    modelSolution:'Am \u00c4quator verlaufen die Feldlinien des Erdmagnetfeldes nahezu horizontal (Inklination \u2248 0\u00b0). Zu den Polen hin tauchen die Feldlinien immer steiler in den Boden ein. An den magnetischen Polen stehen sie senkrecht (Inklination = 90\u00b0). Der Grund: Die Feldlinien verlaufen vom magnetischen S\u00fcdpol (in der N\u00e4he des geographischen Nordpols) durch das Erdinnere zum magnetischen Nordpol (nahe dem geographischen S\u00fcdpol) und treten an den Polen senkrecht ein bzw. aus.',
+    hints:['Inklination = Winkel der Feldlinien gegen\u00fcber der Horizontalen.','Stelle dir vor, wie die Feldlinien eines Stabmagneten verlaufen \u2013 am \u00c4quator horizontal, an den Polen senkrecht.'],
+    successMsg:'Genau! An den magnetischen Polen ist die Inklination 90\u00b0.'
+  },
+  {
+    type:'combo', title:'Auftrag 3 \u2013 Entstehung des Erdmagnetfeldes',
+    intro:'F\u00fcr einen ESA-Bericht: Wie entsteht das Erdmagnetfeld?',
+    text:'Das Erdmagnetfeld hat seinen Ursprung tief im Inneren unseres Planeten.',
+    mcQuestion:'Was ist die Hauptursache des Erdmagnetfeldes?',
+    mcOptions:[
+      'Permanentmagnete im festen Erdkern',
+      'Konvektionsstr\u00f6me im fl\u00fcssigen \u00e4u\u00dferen Erdkern (Geodynamo)',
+      'Die Rotation der festen Erdkruste',
+      'Kosmische Strahlung, die die Atmosph\u00e4re magnetisiert'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Erkl\u00e4re den Geodynamo-Effekt in 2\u20133 S\u00e4tzen.',
+    modelSolution:'Im fl\u00fcssigen \u00e4u\u00dferen Erdkern (haupts\u00e4chlich fl\u00fcssiges Eisen und Nickel) entstehen durch Temperaturunterschiede Konvektionsstr\u00f6me. Diese bewegten elektrisch leitf\u00e4higen Fl\u00fcssigkeiten erzeugen \u2013 verst\u00e4rkt durch die Erdrotation (Corioliskraft) \u2013 elektrische Str\u00f6me, die wiederum ein Magnetfeld erzeugen. Dieses Magnetfeld stabilisiert sich selbst und wird als Geodynamo bezeichnet.',
+    hints:['Der feste innere Kern ist zu hei\u00df f\u00fcr permanente Magnetisierung.','Bewegte elektrische Ladungen erzeugen Magnetfelder \u2013 das gilt auch f\u00fcr fl\u00fcssiges Metall im Erdkern.'],
+    successMsg:'Richtig! Der Geodynamo im fl\u00fcssigen Erdkern erzeugt das Magnetfeld.'
+  },
+  {
+    type:'combo', title:'Auftrag 4 \u2013 Schutzfunktion',
+    intro:'Verfasse einen Abschnitt f\u00fcr den ESA-Bericht \u00fcber die Schutzfunktion des Erdmagnetfeldes.',
+    text:'Das Erdmagnetfeld sch\u00fctzt die Erde vor gef\u00e4hrlicher Strahlung aus dem Weltraum.',
+    mcQuestion:'Wovor sch\u00fctzt das Erdmagnetfeld die Erde haupts\u00e4chlich?',
+    mcOptions:[
+      'Vor Meteoriteneinschl\u00e4gen',
+      'Vor dem geladenen Teilchenstrom der Sonne (Sonnenwind)',
+      'Vor UV-Strahlung',
+      'Vor Gammastrahlen aus dem Zentrum der Milchstra\u00dfe'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Beschreibe: Was w\u00fcrde ohne das Erdmagnetfeld passieren?',
+    modelSolution:'Ohne das Erdmagnetfeld w\u00fcrde der Sonnenwind (geladene Teilchen wie Protonen und Elektronen) ungehindert auf die Atmosph\u00e4re treffen. Dies w\u00fcrde die Ozonschicht zerst\u00f6ren, die Oberfl\u00e4che w\u00e4re sch\u00e4dlicher Strahlung ausgesetzt. Die Atmosph\u00e4re k\u00f6nnte nach und nach vom Sonnenwind abgetragen werden (wie beim Mars). Leben an der Erdoberfl\u00e4che w\u00e4re in der heutigen Form nicht m\u00f6glich.',
+    hints:['Sonnenwind = geladene Teilchen. Was passiert mit geladenen Teilchen im Magnetfeld?','Denke an den Mars \u2013 er hat kein globales Magnetfeld. Was ist die Folge?'],
+    successMsg:'Richtig! Die Magnetosph\u00e4re lenkt den Sonnenwind ab.'
+  },
+  {
+    type:'combo', title:'Auftrag 5 \u2013 Polarlichter',
+    intro:'Du schreibst f\u00fcr die ESA einen Bericht \u00fcber Polarlichter \u2013 erkl\u00e4re ihre Entstehung!',
+    text:'Polarlichter (Aurora) sind ein faszinierendes Ph\u00e4nomen an den Polen.',
+    mcQuestion:'Wie entstehen Polarlichter?',
+    mcOptions:[
+      'Sonnenlicht wird von Eiskristallen in der Atmosph\u00e4re reflektiert',
+      'Geladene Sonnenteilchen regen Luftmolek\u00fcle zum Leuchten an',
+      'Vulkanische Gase in der oberen Atmosph\u00e4re fluoreszieren',
+      'Blitze in gro\u00dfer H\u00f6he erzeugen das Leuchten'
+    ],
+    mcCorrect:1,
+    freetextPrompt:'Erkl\u00e4re, warum Polarlichter haupts\u00e4chlich in der N\u00e4he der Pole auftreten.',
+    modelSolution:'Geladene Teilchen des Sonnenwinds werden von der Magnetosph\u00e4re eingefangen und entlang der Feldlinien zu den magnetischen Polen gef\u00fchrt. Dort treten die Feldlinien fast senkrecht in die Atmosph\u00e4re ein. Die Teilchen treffen auf Sauerstoff- und Stickstoffatome in der oberen Atmosph\u00e4re (80\u2013300 km H\u00f6he), regen diese an, und beim Zur\u00fcckfallen in den Grundzustand emittieren die Atome Licht (gr\u00fcn von Sauerstoff, rot/violett von Stickstoff).',
+    hints:['Wohin werden die Sonnenteilchen durch die Feldlinien geleitet?','Die Farbe h\u00e4ngt davon ab, welches Gas angeregt wird: Sauerstoff \u2192 gr\u00fcn, Stickstoff \u2192 rot/violett.'],
+    successMsg:'Genau! Sonnenteilchen folgen den Feldlinien zu den Polen und regen die Luft zum Leuchten an.'
+  },
+  {
+    type:'combo', title:'Auftrag 6 \u2013 Feldlinien des Erdmagnetfeldes',
+    intro:'F\u00fcr die Navigationskarten musst du die Feldlinien richtig verstehen.',
+    text:'Die Feldlinien des Erdmagnetfeldes haben eine bestimmte Richtung.',
+    mcQuestion:'Wo treten die magnetischen Feldlinien des Erdmagnetfeldes in die Erde ein?',
+    mcOptions:[
+      'Am geographischen Nordpol',
+      'Am geographischen S\u00fcdpol',
+      'In der N\u00e4he des geographischen Nordpols (magnetischer S\u00fcdpol)',
+      'Am \u00c4quator'
+    ],
+    mcCorrect:2,
+    freetextPrompt:'Erkl\u00e4re, warum sich in der N\u00e4he des geographischen Nordpols ein magnetischer S\u00fcdpol befindet.',
+    modelSolution:'Magnetische Feldlinien verlaufen per Definition au\u00dferhalb eines Magneten von Nord nach S\u00fcd. Die Kompassnadel zeigt mit ihrem Nordpol zum geographischen Norden. Da sich ungleiche Pole anziehen, muss sich in der N\u00e4he des geographischen Nordpols ein magnetischer S\u00fcdpol befinden. Dort treten die Feldlinien in die Erde ein (wie bei einem S\u00fcdpol eines Stabmagneten).',
+    hints:['Feldlinien verlaufen au\u00dferhalb des Magneten von Nord nach S\u00fcd.','Die Kompassnadel zeigt mit ihrem Nordpol nach Norden \u2013 was sagt das \u00fcber den Pol dort aus?'],
+    successMsg:'Richtig! Der magnetische S\u00fcdpol liegt nahe dem geographischen Nordpol.'
+  },
+  {
+    type:'freetext', title:'Auftrag 7 \u2013 Synthese: Kompass am Nordpol',
+    intro:'Abschlussfrage f\u00fcr deinen ESA-Bericht \u2013 eine knifflige Denkaufgabe!',
+    text:'<strong>Syntheseaufgabe:</strong> Ein Forscher steht genau am magnetischen Nordpol (in Nordkanada). Er versucht, mit einem normalen Kompass die Richtung zu bestimmen.',
+    freetextPrompt:'Erkl\u00e4re, warum der Kompass dort nicht zuverl\u00e4ssig zur Navigation funktioniert.',
+    modelSolution:'Am magnetischen Nordpol (eigentlich der magnetische S\u00fcdpol der Erde) ist die Inklination nahezu 90\u00b0 \u2013 die Feldlinien stehen fast senkrecht. Die Kompassnadel wird nach unten gezogen statt horizontal eine Richtung anzuzeigen. Die horizontale Komponente des Erdmagnetfeldes ist dort extrem klein, sodass die Nadel keine stabile Nord-S\u00fcd-Ausrichtung findet. Kleinste St\u00f6rungen (z.B. nahes Metall) beeinflussen die Nadel st\u00e4rker als das Erdmagnetfeld selbst.',
+    hints:['Wie stehen die Feldlinien am magnetischen Pol? Was bedeutet das f\u00fcr die Inklination?','Eine Kompassnadel reagiert auf die <em>horizontale</em> Komponente des B-Feldes. Wie gro\u00df ist diese am Pol?'],
+    successMsg:'Ausgezeichnet! Eine anspruchsvolle Synthese-Aufgabe.'
+  }
+  ]
+},
+// ────── SPRINT-FINALE ──────
+{
+  id:'finale', day:'Sprint-Finale', name:'Sprint-Finale', emoji:'⭐',
+  job:'Alle Berufe', color:'#CA8A04', theme:'theme-finale',
+  topic:'Gemischte Aufgaben aus allen Stationen',
+  intro:'Das gro\u00dfe Finale! Hier triffst du auf die schwierigsten Aufgaben aus allen Themengebieten. Zeige, dass du alles verstanden hast!',
+  tasks:[
+  {
+    type:'calc', title:'Sprint 1 \u2013 Coulomb: Zwei Kr\u00e4fte',
+    intro:'Schwere Coulomb-Aufgabe: Berechne die Gesamtkraft auf eine Ladung zwischen zwei anderen!',
+    text:'q\u2081 = +4 \u00b5C sitzt bei x = 0, q\u2082 = \u22122 \u00b5C bei x = 30 cm. Welche Kraft wirkt auf q\u2083 = +1 \u00b5C bei x = 15 cm? (Betrag)',
+    given:'q\u2081 = +4 \u00b5C (x=0) &emsp; q\u2082 = \u22122 \u00b5C (x=30cm) &emsp; q\u2083 = +1 \u00b5C (x=15cm)',
+    answerSI:2.4, primaryValue:2.4, primaryUnit:'N',
+    units:['mN','N','kN'], unitKeys:['mN','N','kN'],
+    hints:['Berechne die Kraft von jeder Ladung auf q\u2083 einzeln. Achte dabei auf Anziehung vs. Absto\u00dfung!',
+           'Beide Kr\u00e4fte haben eine Richtung. \u00dcberlege f\u00fcr jede: Zeigt sie nach links oder rechts? Dann addiere oder subtrahiere.'],
+    solutionSteps:['F\u2081\u2083 = 9\u00b710\u2079 \u00b7 4\u00b710\u207b\u2076 \u00b7 10\u207b\u2076 / (0,15)\u00b2 = 1,6 N (absto\u00dfend \u2192 nach rechts)','F\u2082\u2083 = 9\u00b710\u2079 \u00b7 2\u00b710\u207b\u2076 \u00b7 10\u207b\u2076 / (0,15)\u00b2 = 0,8 N (anziehend \u2192 nach rechts)','Beide Kr\u00e4fte zeigen nach rechts!','res:F\u2093\u2091\u209b = 1,6 + 0,8 = 2,4 N'],
+    successMsg:'Perfekt! Vorzeichenanalyse und Kr\u00e4fteaddition korrekt!'
+  },
+  {
+    type:'calc', title:'Sprint 2 \u2013 Defibrillator-Energie',
+    intro:'Berechne die Energie eines Defibrillator-Kondensators!',
+    text:'Ein Defibrillator-Kondensator (C = 32 \u00b5F) wird auf U = 5000 V geladen. Welche Energie ist gespeichert?',
+    given:'C = 32 \u00b5F &emsp; U = 5000 V',
+    answerSI:400, primaryValue:400, primaryUnit:'J',
+    units:['J','kJ'], unitKeys:['J','kJ'],
+    hints:['Wie berechnet man die gespeicherte Energie eines Kondensators? Die Formel enth\u00e4lt C und U.'],
+    solutionSteps:['W = \u00bd \u00b7 C \u00b7 U\u00b2','W = 0,5 \u00b7 32\u00b710\u207b\u2076 \u00b7 25\u00b710\u2076','W = 0,5 \u00b7 800','res:W = 400 J'],
+    successMsg:'Richtig! 400 J \u2013 das ist die Energie eines kurzen Stromsto\u00dfes.'
+  },
+  {
+    type:'calc', title:'Sprint 3 \u2013 K\u00fcgelchen im Feld',
+    intro:'Ein schwieriges Beschleunigungsproblem!',
+    text:'Ein K\u00fcgelchen (m = 0,5 g, q = 2 \u00b5C) wird durch U = 10 kV beschleunigt. Berechne die Endgeschwindigkeit.',
+    given:'m = 0,5 g &emsp; q = 2 \u00b5C &emsp; U = 10 kV',
+    answerSI:8.94, primaryValue:8.9, primaryUnit:'m/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Elektrische Energie wird vollst\u00e4ndig in Bewegungsenergie umgewandelt. Setze beide gleich.'],
+    solutionSteps:['v = \u221a(2qU/m)','v = \u221a(2 \u00b7 2\u00b710\u207b\u2076 \u00b7 10\u2074 / 5\u00b710\u207b\u2074)','v = \u221a(4\u00b710\u207b\u00b2 / 5\u00b710\u207b\u2074) = \u221a(80)','res:v \u2248 8,9 m/s'],
+    successMsg:'Genau! Die Energieerhaltung liefert elegant die Endgeschwindigkeit.'
+  },
+  {
+    type:'mc', title:'Sprint 4 \u2013 Lorentz: Negative Ladung',
+    intro:'Vorsicht \u2013 hier bewegt sich eine negative Ladung!',
+    text:'Ein <strong>Elektron</strong> (negativ geladen) bewegt sich <strong>nach oben (\u2191)</strong>. Das Magnetfeld zeigt <strong>nach rechts (\u2192)</strong>. In welche Richtung wirkt die Lorentzkraft?',
+    mcOptions:['Nach links (\u2190)','Nach rechts (\u2192)','Nach oben (\u2191)','Nach unten (\u2193)','In die Seite (\u2297)','Aus der Seite (\u2299)'],
+    mcCorrect:5,
+    explanation:'F\u00fcr positive Ladung: v\u00d7B = oben \u00d7 rechts = in die Seite (\u2297). F\u00fcr negative Ladung: F dreht sich um \u2192 aus der Seite (\u2299). Alternative: Linke-Hand-Regel f\u00fcr Elektronen.',
+    hints:['Bestimme zuerst die Richtung f\u00fcr eine POSITIVE Ladung, dann drehe um.','v \u00d7 B: oben \u00d7 rechts = ? (Rechte-Hand-Regel). Dann Vorzeichen umkehren!'],
+    successMsg:'Perfekt! Bei negativen Ladungen kehrt sich die Richtung um.'
+  },
+  {
+    type:'mc', title:'Sprint 5 \u2013 Keine Lorentzkraft',
+    intro:'Wann wirkt keine Lorentzkraft?',
+    text:'In welchem Fall erf\u00e4hrt ein geladenes Teilchen <strong>keine</strong> Lorentzkraft?',
+    mcOptions:[
+      'Wenn es sich senkrecht zum Magnetfeld bewegt',
+      'Wenn es sich parallel zum Magnetfeld bewegt',
+      'Wenn das Magnetfeld besonders stark ist',
+      'Wenn die Ladung des Teilchens besonders gro\u00df ist'
+    ],
+    mcCorrect:1,
+    explanation:'Die Lorentzkraft ist F = qv\u00d7B. Das Kreuzprodukt v\u00d7B ist null, wenn v parallel zu B ist (sin 0\u00b0 = 0). Nur die Geschwindigkeitskomponente senkrecht zu B tr\u00e4gt zur Kraft bei.',
+    hints:['F = q\u00b7v\u00b7B\u00b7sin(\u03b1) \u2013 wann wird sin(\u03b1) = 0?','Parallel bedeutet: v und B zeigen in dieselbe Richtung.'],
+    successMsg:'Genau! Parallel zu B gibt es keine Lorentzkraft (sin 0\u00b0 = 0).'
+  },
+  {
+    type:'mc', title:'Sprint 6 \u2013 Kondensator ohne Quelle',
+    intro:'Klassisches Pr\u00fcfungsthema!',
+    text:'Ein geladener Kondensator wird von der Spannungsquelle <strong>getrennt</strong>. Der Plattenabstand wird <strong>verdoppelt</strong>. Was passiert mit der Feldst\u00e4rke E?',
+    mcOptions:['E verdoppelt sich','E halbiert sich','E bleibt gleich','E wird null'],
+    mcCorrect:2,
+    explanation:'Ohne Quelle: Q = const. E = \u03c3/\u03b5\u2080 = Q/(\u03b5\u2080\u00b7A) \u2013 unabh\u00e4ngig von d! Alternativ: U verdoppelt sich (U = Q/C, C halbiert), d verdoppelt sich \u2192 E = U/d bleibt gleich.',
+    hints:['Was bleibt konstant, wenn die Quelle getrennt ist?','E l\u00e4sst sich auch schreiben als E = Q/(\u03b5\u2080\u00b7A) \u2013 wo kommt d vor?'],
+    successMsg:'Richtig! E ist unabh\u00e4ngig von d, wenn Q konstant bleibt.'
+  },
+  {
+    type:'freetext', title:'Sprint 7 \u2013 Erdmagnetfeld-Essay',
+    intro:'Verfasse eine kurze Zusammenfassung!',
+    text:'<strong>Erkl\u00e4re in 3\u20135 S\u00e4tzen:</strong> Wie entsteht das Erdmagnetfeld und warum ist es f\u00fcr das Leben auf der Erde wichtig?',
+    freetextPrompt:'Schreibe deine Erkl\u00e4rung hier:',
+    modelSolution:'Das Erdmagnetfeld entsteht durch den Geodynamo-Effekt: Im fl\u00fcssigen \u00e4u\u00dferen Erdkern (Eisen/Nickel) erzeugen Konvektionsstr\u00f6me, verst\u00e4rkt durch die Erdrotation, elektrische Str\u00f6me, die das Magnetfeld erzeugen. Die Magnetosph\u00e4re lenkt den Sonnenwind (geladene Teilchen) um die Erde herum ab und sch\u00fctzt so die Atmosph\u00e4re vor Erosion und die Erdoberfl\u00e4che vor sch\u00e4dlicher Strahlung. Ohne das Magnetfeld w\u00fcrde die Ozonschicht zerst\u00f6rt, und Leben in der heutigen Form w\u00e4re nicht m\u00f6glich.',
+    hints:['Zwei Aspekte: 1) Entstehung (Geodynamo) und 2) Schutzfunktion (Sonnenwind, Atmosph\u00e4re)','Denke an den Vergleich mit dem Mars \u2013 was fehlt ihm?'],
+    successMsg:'Ausgezeichnete Zusammenfassung!'
+  },
+  {
+    type:'calc', title:'Sprint 8 \u2013 Kombination',
+    intro:'Die letzte Aufgabe: Alles zusammen!',
+    text:'Ein K\u00fcgelchen (m = 1 g, q = 50 \u00b5C) wird durch die Spannung eines Kondensators (C = 100 \u00b5F, U = 500 V) beschleunigt. Berechne die Endgeschwindigkeit.',
+    given:'m = 1 g &emsp; q = 50 \u00b5C &emsp; U = 500 V',
+    answerSI:7.07, primaryValue:7.1, primaryUnit:'m/s',
+    units:['m/s','km/s'], unitKeys:['m/s','km/s'],
+    hints:['Die Spannung des Kondensators beschleunigt das K\u00fcgelchen. Welche Energieumwandlung findet statt?',
+           'Du brauchst die Kapazit\u00e4t C nicht \u2013 nur q, U und m gehen ein. Stelle den Energiesatz nach v um.'],
+    solutionSteps:['Energie: W = q \u00b7 U = 50\u00b710\u207b\u2076 \u00b7 500 = 0,025 J','v = \u221a(2W/m) = \u221a(2 \u00b7 0,025 / 0,001)','v = \u221a(50)','res:v \u2248 7,1 m/s'],
+    successMsg:'Herzlichen Gl\u00fcckwunsch! Du hast das Sprint-Finale abgeschlossen!'
+  }
+  ]
+}
+];
+
+// ===== SVG GENERATORS =====
+function svgChargeCurve() {
+  return `<svg viewBox="0 0 400 250" style="max-width:400px">
+    <rect x="50" y="10" width="340" height="220" fill="#f8fafc" rx="4"/>
+    <line x1="70" y1="200" x2="370" y2="200" stroke="#475569" stroke-width="2"/>
+    <line x1="70" y1="200" x2="70" y2="30" stroke="#475569" stroke-width="2"/>
+    <text x="380" y="205" font-size="14" fill="#475569">t</text>
+    <text x="55" y="25" font-size="14" fill="#475569">Q</text>
+    <line x1="70" y1="50" x2="370" y2="50" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,4"/>
+    <text x="30" y="55" font-size="12" fill="#94a3b8">Q<tspan font-size="9" dy="3">max</tspan></text>
+    <path d="M70 200 Q120 60 200 55 Q280 52 370 50" stroke="#2563eb" stroke-width="3" fill="none">
+      <animate attributeName="stroke-dashoffset" from="400" to="0" dur="2s" fill="freeze"/>
+      <animate attributeName="stroke-dasharray" from="400" to="0" dur="0.01s" fill="freeze"/>
+    </path>
+    <text x="180" y="240" font-size="13" fill="#475569" text-anchor="middle">Ladekurve Q(t) \u2013 exponentieller Anstieg</text>
+  </svg>`;
+}
+function svgDischargeCurve() {
+  return `<svg viewBox="0 0 400 250" style="max-width:400px">
+    <rect x="50" y="10" width="340" height="220" fill="#f8fafc" rx="4"/>
+    <line x1="70" y1="200" x2="370" y2="200" stroke="#475569" stroke-width="2"/>
+    <line x1="70" y1="200" x2="70" y2="30" stroke="#475569" stroke-width="2"/>
+    <text x="380" y="205" font-size="14" fill="#475569">t</text>
+    <text x="55" y="25" font-size="14" fill="#475569">Q</text>
+    <text x="30" y="55" font-size="12" fill="#94a3b8">Q<tspan font-size="9" dy="3">0</tspan></text>
+    <path d="M70 50 Q150 55 220 120 Q290 170 370 195" stroke="#dc2626" stroke-width="3" fill="none"/>
+    <text x="180" y="240" font-size="13" fill="#475569" text-anchor="middle">Entladekurve Q(t) \u2013 exponentieller Abfall</text>
+  </svg>`;
+}
+function svgLorentzUp() {
+  return `<svg viewBox="0 0 300 250" style="max-width:300px">
+    <rect x="10" y="10" width="280" height="230" fill="#fff7ed" rx="8"/>
+    <text x="150" y="40" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold">Lorentzkraft-Richtung</text>
+    <!-- B into page symbols -->
+    <g fill="#475569" font-size="20">
+      <text x="60" y="120">\u2297</text><text x="120" y="120">\u2297</text><text x="180" y="120">\u2297</text><text x="240" y="120">\u2297</text>
+      <text x="60" y="170">\u2297</text><text x="120" y="170">\u2297</text><text x="180" y="170">\u2297</text><text x="240" y="170">\u2297</text>
+    </g>
+    <text x="270" y="100" font-size="11" fill="#475569">B</text>
+    <!-- v arrow (right) -->
+    <line x1="80" y1="145" x2="170" y2="145" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowBlue)"/>
+    <text x="125" y="138" font-size="14" fill="#2563eb" font-weight="bold">v</text>
+    <!-- F arrow (up) -->
+    <line x1="130" y1="140" x2="130" y2="70" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowRed)"/>
+    <text x="140" y="85" font-size="14" fill="#dc2626" font-weight="bold">F</text>
+    <defs>
+      <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/></marker>
+      <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/></marker>
+    </defs>
+    <text x="150" y="220" font-size="12" fill="#475569" text-anchor="middle">q+ nach rechts, B in Seite \u2192 F nach oben</text>
+  </svg>`;
+}
+function svgLorentzLeft() {
+  return `<svg viewBox="0 0 300 250" style="max-width:300px">
+    <rect x="10" y="10" width="280" height="230" fill="#fff7ed" rx="8"/>
+    <text x="150" y="40" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold">Lorentzkraft auf Na\u207a</text>
+    <!-- B out of page symbols -->
+    <g fill="#475569" font-size="20">
+      <text x="60" y="120">\u2299</text><text x="120" y="120">\u2299</text><text x="180" y="120">\u2299</text><text x="240" y="120">\u2299</text>
+      <text x="60" y="170">\u2299</text><text x="120" y="170">\u2299</text><text x="180" y="170">\u2299</text><text x="240" y="170">\u2299</text>
+    </g>
+    <text x="270" y="100" font-size="11" fill="#475569">B</text>
+    <!-- v arrow (up) -->
+    <line x1="150" y1="190" x2="150" y2="80" stroke="#2563eb" stroke-width="3" marker-end="url(#aB2)"/>
+    <text x="160" y="130" font-size="14" fill="#2563eb" font-weight="bold">v</text>
+    <!-- F arrow (left) -->
+    <line x1="145" y1="140" x2="60" y2="140" stroke="#dc2626" stroke-width="3" marker-end="url(#aR2)"/>
+    <text x="90" y="135" font-size="14" fill="#dc2626" font-weight="bold">F</text>
+    <defs>
+      <marker id="aB2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/></marker>
+      <marker id="aR2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/></marker>
+    </defs>
+    <text x="150" y="220" font-size="12" fill="#475569" text-anchor="middle">Na\u207a nach oben, B aus Seite \u2192 F nach links</text>
+  </svg>`;
+}
+function svgHorseshoe() {
+  return `<svg viewBox="0 0 300 200" style="max-width:300px">
+    <rect x="5" y="5" width="290" height="190" fill="#f8fafc" rx="8"/>
+    <rect x="30" y="30" rx="5" width="40" height="140" fill="#dc2626"/>
+    <rect x="230" y="30" rx="5" width="40" height="140" fill="#2563eb"/>
+    <text x="50" y="25" font-size="13" fill="#dc2626" text-anchor="middle" font-weight="bold">N</text>
+    <text x="250" y="25" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="bold">S</text>
+    <!-- parallel field lines -->
+    <g stroke="#15803d" stroke-width="1.5" fill="none" marker-end="url(#aG)">
+      <line x1="80" y1="60" x2="220" y2="60"/>
+      <line x1="80" y1="90" x2="220" y2="90"/>
+      <line x1="80" y1="120" x2="220" y2="120"/>
+      <line x1="80" y1="150" x2="220" y2="150"/>
+    </g>
+    <defs><marker id="aG" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#15803d"/></marker></defs>
+    <text x="150" y="185" font-size="11" fill="#475569" text-anchor="middle">Homogenes Feld zwischen den Polen</text>
+  </svg>`;
+}
+const SVG_MAP = {
+  charge_curve: svgChargeCurve,
+  discharge_curve: svgDischargeCurve,
+  lorentz_up: svgLorentzUp,
+  lorentz_left: svgLorentzLeft,
+  horseshoe: svgHorseshoe
+};
+
+// ===== GAME STATE =====
+let state = {
+  playerName: '',
+  expert: false,
+  currentStation: 0,
+  currentTask: 0,
+  score: 0,
+  hintsUsed: 0,
+  hintsThisTask: 0,
+  results: [],
+  timerInterval: null,
+  timerSeconds: 90,
+  countdownInterval: null,
+  answered: false,
+  mcAnswered: false,
+  tableChecked: false,
+  freetextShown: false,
+  bonusMode: false,
+  bonusCount: 0
+};
+
+function loadSave() {
+  try {
+    const s = JSON.parse(localStorage.getItem('physik_woche2') || '{}');
+    return s;
+  } catch(e) { return {}; }
+}
+function saveSave(data) {
+  try { localStorage.setItem('physik_woche2', JSON.stringify(data)); } catch(e) {}
+}
+function getSave() {
+  const s = loadSave();
+  if (!s.stations) s.stations = {};
+  if (!s.name) s.name = '';
+  if (s.expert === undefined) s.expert = false;
+  return s;
+}
+
+// ===== SCREEN MANAGEMENT =====
+function hideAll() {
+  ['welcomeScreen','hubScreen','stationIntro','gameScreen','stationEndScreen'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('solutionModal').classList.remove('visible');
+}
+
+function displayName() {
+  return state.playerName || 'du';
+}
+
+function startFromWelcome() {
+  state.playerName = document.getElementById('nameInput').value.trim();
+  state.expert = document.getElementById('expertCheck').checked;
+  const s = getSave();
+  s.name = state.playerName;
+  s.expert = state.expert;
+  saveSave(s);
+  showHub();
+}
+
+// Password map: password → station id
+const PASSWORDS = {
+  'coulomb': 'montag',
+  'kondensator': 'dienstag',
+  'beschleuniger': 'mittwoch',
+  'lorentz': 'donnerstag',
+  'kompass': 'freitag',
+  'finale': 'finale'
+};
+
+function tryPassword() {
+  const input = document.getElementById('pwInput');
+  const msg = document.getElementById('pwMsg');
+  const pw = input.value.trim().toLowerCase();
+  if (!pw) { msg.style.color = '#dc2626'; msg.textContent = 'Bitte ein Passwort eingeben.'; return; }
+  const stationId = PASSWORDS[pw];
+  if (!stationId) { msg.style.color = '#dc2626'; msg.textContent = 'Unbekanntes Passwort.'; input.value = ''; return; }
+  const s = getSave();
+  if (!s.unlocked) s.unlocked = [];
+  if (s.unlocked.includes(stationId)) {
+    msg.style.color = '#f59e0b'; msg.textContent = 'Diese Station ist bereits freigeschaltet.';
+  } else {
+    s.unlocked.push(stationId);
+    saveSave(s);
+    const st = STATIONS.find(x => x.id === stationId);
+    msg.style.color = '#16a34a'; msg.textContent = `✓ „${st.name}" freigeschaltet!`;
+  }
+  input.value = '';
+  showHub();
+}
+
+function isUnlocked(stationId, idx, s) {
+  // First station always unlocked
+  if (idx === 0) return true;
+  // Unlocked via password
+  if (s.unlocked && s.unlocked.includes(stationId)) return true;
+  // Completed stations are accessible
+  const sd = (s.stations && s.stations[stationId]) || {};
+  if (sd.completed) return true;
+  // Finale: all others must be completed
+  if (idx === STATIONS.length - 1) {
+    let done = 0;
+    STATIONS.forEach((st2, j) => { if (j < STATIONS.length - 1 && s.stations && s.stations[st2.id] && s.stations[st2.id].completed) done++; });
+    return done >= STATIONS.length - 1;
+  }
+  // Sequential: previous station must be completed
+  const prev = STATIONS[idx - 1];
+  const prevD = (s.stations && s.stations[prev.id]) || {};
+  return !!prevD.completed;
+}
+
+function showHub() {
+  hideAll();
+  document.body.className = '';
+  const s = getSave();
+  state.playerName = s.name || '';
+  state.expert = s.expert || false;
+  document.getElementById('hubTitle').innerHTML = state.playerName
+    ? `Praktikumswoche 2 – ${state.playerName}`
+    : 'Praktikumswoche 2';
+  const grid = document.getElementById('hubGrid');
+  grid.innerHTML = '';
+  let completed = 0;
+  STATIONS.forEach((st, i) => {
+    const sd = (s.stations && s.stations[st.id]) || {};
+    const isComplete = sd.completed;
+    if (isComplete) completed++;
+    const locked = !isUnlocked(st.id, i, s);
+    const card = document.createElement('div');
+    card.className = 'station-card' + (locked ? ' locked' : '') + (isComplete ? ' completed' : '');
+    card.style.borderLeftColor = locked ? '' : st.color;
+    card.innerHTML = `
+      <div class="sc-emoji">${st.emoji}</div>
+      <div class="sc-day">${st.day}</div>
+      <div class="sc-name">${st.name}</div>
+      <div class="sc-topic">${st.topic}</div>
+      ${isComplete ? `<div class="sc-score">✓ ${sd.score}/${sd.total} richtig</div>` : ''}
+    `;
+    if (!locked) {
+      card.onclick = () => showStationIntro(i);
+    }
+    grid.appendChild(card);
+  });
+  const pct = Math.round(completed / STATIONS.length * 100);
+  document.getElementById('hubOverallFill').style.width = pct + '%';
+  document.getElementById('hubOverallText').textContent = `${completed} / ${STATIONS.length} Stationen abgeschlossen`;
+  document.getElementById('hubScreen').classList.remove('hidden');
+}
+
+function showStationIntro(idx) {
+  hideAll();
+  state.currentStation = idx;
+  const st = STATIONS[idx];
+  document.body.className = st.theme;
+  document.getElementById('siTitle').innerHTML = `${st.emoji} ${st.day} \u2013 ${st.name}`;
+  document.getElementById('siJob').textContent = `Beruf: ${st.job}`;
+  document.getElementById('siText').innerHTML = (state.playerName
+    ? `Praktikant/in <strong>${state.playerName}</strong>, ${st.intro.charAt(0).toLowerCase() + st.intro.slice(1)}`
+    : st.intro);
+  document.getElementById('siCount').innerHTML = `<strong>${st.tasks.length} Aufgaben</strong> warten auf dich. Bis zu 2 Hinweise pro Aufgabe helfen dir weiter.`;
+  document.getElementById('siExpertCheck').checked = state.expert;
+  document.getElementById('stationIntro').classList.remove('hidden');
+}
+
+function startStation() {
+  state.expert = document.getElementById('siExpertCheck').checked;
+  const s = getSave(); s.expert = state.expert; saveSave(s);
+  state.currentTask = 0;
+  state.score = 0;
+  state.hintsUsed = 0;
+  state.results = [];
+  state.bonusMode = false;
+  state.bonusCount = 0;
+  hideAll();
+  document.getElementById('gameScreen').classList.remove('hidden');
+  loadTask();
+}
+
+function replayStation() {
+  showStationIntro(state.currentStation);
+}
+
+// ===== TASK LOADING =====
+function loadTask() {
+  const st = STATIONS[state.currentStation];
+  const tasks = st.tasks;
+  const t = tasks[state.currentTask];
+  const total = tasks.length;
+  state.hintsThisTask = 0;
+  state.answered = false;
+  state.mcAnswered = false;
+  state.tableChecked = false;
+  state.freetextShown = false;
+
+  // Progress
+  document.getElementById('progressLabel').textContent = `Aufgabe ${state.currentTask + 1} / ${total}`;
+  document.getElementById('progressFill').style.width = ((state.currentTask + 1) / total * 100) + '%';
+  document.getElementById('progressScore').textContent = `${state.score} richtig`;
+
+  // Title with difficulty badge
+  const diff = state.currentTask < 2 ? 'easy' : (state.currentTask < 5 ? 'medium' : 'hard');
+  const diffLabel = diff === 'easy' ? 'Leicht' : (diff === 'medium' ? 'Mittel' : 'Schwer');
+  document.getElementById('taskTitle').innerHTML = t.title + ` <span class="task-badge ${diff}">${diffLabel}</span>`;
+
+  // Intro
+  document.getElementById('customerIntro').innerHTML = `<strong>${st.emoji} ${st.job}:</strong> \u201e${t.intro}\u201c`;
+  document.getElementById('taskText').innerHTML = t.text;
+
+  // Given box
+  const givenEl = document.getElementById('givenBox');
+  if (t.given) { givenEl.innerHTML = t.given; givenEl.classList.remove('hidden'); }
+  else { givenEl.classList.add('hidden'); }
+
+  // Build task body based on type
+  const body = document.getElementById('taskBody');
+  body.innerHTML = '';
+  if (t.type === 'calc') buildCalcBody(body, t);
+  else if (t.type === 'mc') buildMcBody(body, t);
+  else if (t.type === 'table') buildTableBody(body, t);
+  else if (t.type === 'freetext') buildFreetextBody(body, t);
+  else if (t.type === 'combo') buildComboBody(body, t);
+
+  // Hints
+  const hasHint1 = t.hints && t.hints.length >= 1;
+  const hasHint2 = t.hints && t.hints.length >= 2;
+  document.getElementById('hintBtn1').disabled = false;
+  document.getElementById('hintBtn1').classList.toggle('hidden', !hasHint1);
+  document.getElementById('hintBtn2').disabled = true;
+  document.getElementById('hintBtn2').classList.toggle('hidden', !hasHint2);
+  document.getElementById('hintText1').classList.remove('visible');
+  document.getElementById('hintText2').classList.remove('visible');
+  document.getElementById('hintText1').innerHTML = '';
+  document.getElementById('hintText2').innerHTML = '';
+
+  // Feedback
+  const fb = document.getElementById('feedbackInline');
+  fb.className = 'feedback-inline'; fb.style.display = 'none'; fb.innerHTML = '';
+
+  // SVG area
+  document.getElementById('svgArea').classList.add('hidden');
+  document.getElementById('svgArea').innerHTML = '';
+
+  // Timer
+  clearInterval(state.timerInterval);
+  const timerEl = document.getElementById('expertTimer');
+  if (state.expert) {
+    timerEl.classList.remove('hidden');
+    state.timerSeconds = 90;
+    timerEl.textContent = '90 s';
+    timerEl.className = 'expert-timer';
+    state.timerInterval = setInterval(tickTimer, 1000);
+  } else { timerEl.classList.add('hidden'); }
+}
+
+// ===== BUILD TASK BODIES =====
+function buildCalcBody(body, t) {
+  body.innerHTML = `
+    <div class="input-row">
+      <label>Ergebnis:</label>
+      <input type="text" id="answerInput" inputmode="decimal" placeholder="Zahlenwert" autocomplete="off">
+      <select id="unitSelect">${t.units.map((u,i) => `<option value="${t.unitKeys[i]}">${u}</option>`).join('')}</select>
+      <button class="btn btn-primary btn-submit" onclick="submitCalc()">Pr\u00fcfen</button>
+    </div>`;
+  setTimeout(() => { const inp = document.getElementById('answerInput'); if(inp) inp.focus(); }, 100);
+}
+
+function buildMcBody(body, t) {
+  let html = '<div class="mc-options">';
+  t.mcOptions.forEach((opt, i) => {
+    html += `<button class="mc-btn" data-idx="${i}" onclick="submitMc(${i})">${opt}</button>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function buildTableBody(body, t) {
+  let html = `<table class="table-task"><thead><tr><th>Gr\u00f6\u00dfe</th><th>\u00c4nderung</th></tr></thead><tbody>`;
+  t.rows.forEach((r, i) => {
+    html += `<tr><td>${r.label}</td><td><select id="tsel${i}"><option value="">-- w\u00e4hlen --</option><option value="steigt">steigt</option><option value="sinkt">sinkt</option><option value="bleibt gleich">bleibt gleich</option></select></td></tr>`;
+  });
+  html += `</tbody></table>
+    <button class="btn btn-primary btn-submit" onclick="submitTable()">Tabelle pr\u00fcfen</button>
+    <div id="tableFreetextWrap" class="hidden" style="margin-top:16px">
+      <p style="font-weight:600;margin-bottom:8px">${t.freetextPrompt || ''}</p>
+      <textarea class="freetext-area" id="tableFreetextArea" placeholder="Deine Begr\u00fcndung..."></textarea>
+      <button class="btn btn-primary btn-submit" onclick="showTableSolution()">Musterl\u00f6sung zeigen</button>
+    </div>`;
+  body.innerHTML = html;
+}
+
+function buildFreetextBody(body, t) {
+  let html = '';
+  if (t.freetextPrompt) html += `<p style="font-weight:600;margin-bottom:8px">${t.freetextPrompt}</p>`;
+  html += `<textarea class="freetext-area" id="freetextArea" placeholder="Deine Antwort..."></textarea>
+    <button class="btn btn-primary btn-submit" onclick="showFreetextSolution()">Musterl\u00f6sung zeigen</button>
+    <div id="freetextSolutionWrap" class="hidden"></div>`;
+  body.innerHTML = html;
+}
+
+function buildComboBody(body, t) {
+  let html = '';
+  if (t.mcQuestion) {
+    html += `<p style="font-weight:600;margin-bottom:10px">${t.mcQuestion}</p>`;
+    html += '<div class="mc-options" id="comboMcOptions">';
+    t.mcOptions.forEach((opt, i) => {
+      html += `<button class="mc-btn" data-idx="${i}" onclick="submitComboMc(${i})">${opt}</button>`;
+    });
+    html += '</div>';
+  }
+  html += `<div id="comboFreetextWrap" class="${t.mcQuestion ? 'hidden' : ''}" style="margin-top:16px">
+    <p style="font-weight:600;margin-bottom:8px">${t.freetextPrompt || 'Beschreibe in eigenen Worten:'}</p>
+    <textarea class="freetext-area" id="comboFreetextArea" placeholder="Deine Erkl\u00e4rung..."></textarea>
+    <button class="btn btn-primary btn-submit" onclick="showComboSolution()">Musterl\u00f6sung zeigen</button>
+    <div id="comboSolutionWrap" class="hidden"></div>
+  </div>`;
+  body.innerHTML = html;
+}
+
+// ===== ANSWER SUBMISSION =====
+function submitCalc() {
+  if (state.answered) return;
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  const raw = (document.getElementById('answerInput').value || '').trim().replace(',', '.');
+  if (!raw) return document.getElementById('answerInput').focus();
+  const num = parseFloat(raw);
+  if (isNaN(num)) return document.getElementById('answerInput').focus();
+  const unitKey = document.getElementById('unitSelect').value;
+  const multiplier = UNIT_SI[unitKey];
+  if (!multiplier && multiplier !== 0) return;
+  const userSI = num * multiplier;
+  const tolerance = 0.05;
+  state.answered = true;
+  clearInterval(state.timerInterval);
+  const relError = Math.abs(userSI - t.answerSI) / Math.abs(t.answerSI);
+  if (relError < tolerance) {
+    state.score++;
+    state.results.push({ correct: true, task: state.currentTask, points: 1 });
+    disableCalcInput();
+    showSuccess(t.successMsg);
+    return;
+  }
+  // Check for unit error
+  const numRelError = Math.abs(num - t.primaryValue) / Math.abs(t.primaryValue);
+  if (numRelError < tolerance) {
+    state.answered = false;
+    if (state.expert) state.timerInterval = setInterval(tickTimer, 1000);
+    showFeedback('unit-error', 'Rechenweg korrekt \u2013 aber pr\u00fcfe die Einheit!');
+    return;
+  }
+  state.results.push({ correct: false, task: state.currentTask, points: 0 });
+  disableCalcInput();
+  showSolutionModal(t);
+}
+
+function submitMc(idx) {
+  if (state.answered) return;
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  state.answered = true;
+  clearInterval(state.timerInterval);
+  const btns = document.querySelectorAll('#taskBody .mc-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const bIdx = parseInt(b.dataset.idx);
+    if (bIdx === t.mcCorrect) b.classList.add('correct');
+    if (bIdx === idx && idx !== t.mcCorrect) b.classList.add('wrong');
+  });
+  if (idx === t.mcCorrect) {
+    state.score++;
+    state.results.push({ correct: true, task: state.currentTask, points: 1 });
+    showSuccess(t.successMsg || 'Richtig!');
+    if (t.showSvg && SVG_MAP[t.showSvg]) {
+      showTaskSvg(SVG_MAP[t.showSvg]());
+    }
+  } else {
+    state.results.push({ correct: false, task: state.currentTask, points: 0 });
+    showFeedback('error', (t.explanation || 'Leider falsch.'));
+    if (t.showSvg && SVG_MAP[t.showSvg]) {
+      showTaskSvg(SVG_MAP[t.showSvg]());
+    }
+    setTimeout(() => nextTask(), 5000);
+  }
+}
+
+function submitComboMc(idx) {
+  if (state.mcAnswered) return;
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  state.mcAnswered = true;
+  const btns = document.querySelectorAll('#comboMcOptions .mc-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const bIdx = parseInt(b.dataset.idx);
+    if (bIdx === t.mcCorrect) b.classList.add('correct');
+    if (bIdx === idx && idx !== t.mcCorrect) b.classList.add('wrong');
+  });
+  if (idx === t.mcCorrect) {
+    showFeedback('success', 'MC-Teil richtig!');
+  } else {
+    showFeedback('error', t.explanation || 'MC-Teil leider falsch.');
+  }
+  // Show freetext part
+  setTimeout(() => {
+    document.getElementById('comboFreetextWrap').classList.remove('hidden');
+    clearFeedback();
+  }, 1500);
+}
+
+function showComboSolution() {
+  if (state.freetextShown) return;
+  state.freetextShown = true;
+  clearInterval(state.timerInterval);
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  const wrap = document.getElementById('comboSolutionWrap');
+  wrap.classList.remove('hidden');
+  let html = `<div class="model-solution"><h4>Musterl\u00f6sung:</h4><p>${t.modelSolution}</p></div>`;
+  if (t.showSvg && SVG_MAP[t.showSvg]) {
+    html += `<div class="svg-wrap" style="margin-top:12px">${SVG_MAP[t.showSvg]()}</div>`;
+  }
+  html += buildSelfAssessHtml();
+  wrap.innerHTML = html;
+}
+
+function submitTable() {
+  if (state.tableChecked) return;
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  let allCorrect = true;
+  t.rows.forEach((r, i) => {
+    const sel = document.getElementById('tsel' + i);
+    const td = sel.parentElement;
+    if (sel.value === r.correct) {
+      td.classList.add('cell-correct');
+    } else {
+      td.classList.add('cell-wrong');
+      allCorrect = false;
+    }
+    sel.disabled = true;
+  });
+  state.tableChecked = true;
+  if (allCorrect) {
+    showFeedback('success', 'Alle Zeilen korrekt!');
+  } else {
+    showFeedback('error', 'Nicht alle Zeilen stimmen. Vergleiche mit der L\u00f6sung:');
+    // Show correct answers
+    t.rows.forEach((r, i) => {
+      const sel = document.getElementById('tsel' + i);
+      const td = sel.parentElement;
+      if (sel.value !== r.correct) {
+        td.innerHTML += `<br><small style="color:#15803d">\u2192 Richtig: <strong>${r.correct}</strong> (${r.explain})</small>`;
+      }
+    });
+  }
+  // Show freetext
+  if (t.freetextPrompt) {
+    document.getElementById('tableFreetextWrap').classList.remove('hidden');
+  }
+}
+
+function showTableSolution() {
+  if (state.freetextShown) return;
+  state.freetextShown = true;
+  state.answered = true;
+  clearInterval(state.timerInterval);
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  const wrap = document.getElementById('tableFreetextWrap');
+  let html = wrap.innerHTML;
+  html += `<div class="model-solution" style="margin-top:12px"><h4>Musterl\u00f6sung:</h4><p>${t.modelSolution}</p></div>`;
+  html += buildSelfAssessHtml();
+  wrap.innerHTML = html;
+  // Record based on table correctness
+  const allCorrect = t.rows.every((r,i) => document.getElementById('tsel'+i) && !document.getElementById('tsel'+i).parentElement.classList.contains('cell-wrong'));
+  // Self-assess will handle scoring
+}
+
+function showFreetextSolution() {
+  if (state.freetextShown) return;
+  state.freetextShown = true;
+  clearInterval(state.timerInterval);
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  const wrap = document.getElementById('freetextSolutionWrap');
+  wrap.classList.remove('hidden');
+  let html = `<div class="model-solution"><h4>Musterl\u00f6sung:</h4><p>${t.modelSolution}</p></div>`;
+  if (t.showSvg && SVG_MAP[t.showSvg]) {
+    html += `<div class="svg-wrap" style="margin-top:12px">${SVG_MAP[t.showSvg]()}</div>`;
+  }
+  html += buildSelfAssessHtml();
+  wrap.innerHTML = html;
+}
+
+function buildSelfAssessHtml() {
+  return `<div style="margin-top:16px"><p style="font-weight:600;margin-bottom:8px">Wie gut war deine Antwort?</p>
+    <div class="self-assess-wrap">
+      <button class="self-assess-btn sa-correct" onclick="selfAssess(1)">Richtig \u2713</button>
+      <button class="self-assess-btn sa-partial" onclick="selfAssess(0.5)">Teilweise \u25d1</button>
+      <button class="self-assess-btn sa-wrong" onclick="selfAssess(0)">Falsch \u2717</button>
+    </div></div>`;
+}
+
+function selfAssess(points) {
+  if (state.answered) return;
+  state.answered = true;
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  if (points >= 1) state.score++;
+  else if (points >= 0.5) state.score += 0.5;
+  state.results.push({ correct: points >= 0.5, task: state.currentTask, points: points, selfAssessed: true });
+  // Highlight selected button
+  document.querySelectorAll('.self-assess-btn').forEach(b => b.disabled = true);
+  if (points >= 1) showFeedback('success', t.successMsg || 'Gut gemacht!');
+  else if (points >= 0.5) showFeedback('unit-error', 'Teilweise richtig \u2013 vergleiche mit der Musterl\u00f6sung.');
+  else showFeedback('error', 'Beim n\u00e4chsten Mal klappt es besser!');
+  setTimeout(() => nextTask(), 2000);
+}
+
+// ===== HELPERS =====
+function disableCalcInput() {
+  const inp = document.getElementById('answerInput');
+  const sel = document.getElementById('unitSelect');
+  if (inp) inp.disabled = true;
+  if (sel) sel.disabled = true;
+}
+
+function showFeedback(type, msg) {
+  const fb = document.getElementById('feedbackInline');
+  fb.className = 'feedback-inline ' + type;
+  fb.style.display = 'block';
+  fb.innerHTML = msg;
+}
+function clearFeedback() {
+  const fb = document.getElementById('feedbackInline');
+  fb.className = 'feedback-inline'; fb.style.display = 'none'; fb.innerHTML = '';
+}
+
+function showSuccess(msg) {
+  showFeedback('success', msg);
+  setTimeout(() => nextTask(), 2000);
+}
+
+function showTaskSvg(svgHtml) {
+  const area = document.getElementById('svgArea');
+  area.innerHTML = svgHtml;
+  area.classList.remove('hidden');
+}
+
+function showSolutionModal(t) {
+  const modal = document.getElementById('solutionModal');
+  const stepsEl = document.getElementById('solutionSteps');
+  stepsEl.innerHTML = '';
+  if (t.solutionSteps) {
+    t.solutionSteps.forEach(step => {
+      const div = document.createElement('div');
+      if (step.startsWith('res:')) {
+        div.className = 'solution-step result';
+        div.innerHTML = step.substring(4);
+      } else {
+        div.className = 'solution-step';
+        div.innerHTML = step;
+      }
+      stepsEl.appendChild(div);
+    });
+  } else if (t.explanation) {
+    stepsEl.innerHTML = `<div class="solution-step">${t.explanation}</div>`;
+  }
+  // SVG in modal
+  const modalSvg = document.getElementById('modalSvg');
+  if (t.showSvg && SVG_MAP[t.showSvg]) {
+    modalSvg.innerHTML = SVG_MAP[t.showSvg]();
+    modalSvg.classList.remove('hidden');
+  } else {
+    modalSvg.classList.add('hidden');
+    modalSvg.innerHTML = '';
+  }
+  const last = state.results[state.results.length - 1];
+  document.getElementById('modalTitle').textContent = (last && last.timeout) ? 'Zeit abgelaufen!' : 'Leider nicht korrekt';
+  document.getElementById('modalSubtitle').textContent = (last && last.timeout)
+    ? 'Die Zeit ist abgelaufen. Hier ist der L\u00f6sungsweg:'
+    : 'Hier ist der vollst\u00e4ndige L\u00f6sungsweg:';
+  let countdown = 15;
+  const countdownEl = document.getElementById('countdownText');
+  const continueBtn = document.getElementById('continueBtn');
+  continueBtn.disabled = true;
+  countdownEl.textContent = `Weiter in ${countdown} Sekunden...`;
+  modal.classList.add('visible');
+  clearInterval(state.countdownInterval);
+  state.countdownInterval = setInterval(() => {
+    countdown--;
+    if (countdown > 0) countdownEl.textContent = `Weiter in ${countdown} Sekunden...`;
+    else { countdownEl.textContent = ''; continueBtn.disabled = false; clearInterval(state.countdownInterval); }
+  }, 1000);
+}
+
+// ===== TIMER =====
+function tickTimer() {
+  state.timerSeconds--;
+  const el = document.getElementById('expertTimer');
+  el.textContent = state.timerSeconds + ' s';
+  if (state.timerSeconds <= 10) el.className = 'expert-timer danger';
+  else if (state.timerSeconds <= 20) el.className = 'expert-timer warning';
+  if (state.timerSeconds <= 0) {
+    clearInterval(state.timerInterval);
+    if (!state.answered) {
+      state.answered = true;
+      state.results.push({ correct: false, task: state.currentTask, timeout: true, points: 0 });
+      disableCalcInput();
+      const t = STATIONS[state.currentStation].tasks[state.currentTask];
+      if (t.type === 'calc') showSolutionModal(t);
+      else {
+        showFeedback('error', 'Zeit abgelaufen!');
+        setTimeout(() => nextTask(), 3000);
+      }
+    }
+  }
+}
+
+// ===== HINTS =====
+function showHint(n) {
+  const t = STATIONS[state.currentStation].tasks[state.currentTask];
+  if (!t.hints || !t.hints[n-1]) return;
+  if (n === 1) {
+    document.getElementById('hintText1').innerHTML = t.hints[0];
+    document.getElementById('hintText1').classList.add('visible');
+    document.getElementById('hintBtn1').disabled = true;
+    document.getElementById('hintBtn2').disabled = false;
+    state.hintsUsed++; state.hintsThisTask++;
+  } else if (n === 2) {
+    document.getElementById('hintText2').innerHTML = t.hints[1];
+    document.getElementById('hintText2').classList.add('visible');
+    document.getElementById('hintBtn2').disabled = true;
+    state.hintsUsed++; state.hintsThisTask++;
+  }
+}
+
+// ===== NAVIGATION =====
+function nextTask() {
+  clearInterval(state.countdownInterval);
+  clearInterval(state.timerInterval);
+  document.getElementById('solutionModal').classList.remove('visible');
+  state.currentTask++;
+  const st = STATIONS[state.currentStation];
+  if (state.currentTask >= st.tasks.length) {
+    showStationEnd();
+    return;
+  }
+  loadTask();
+}
+
+function showStationEnd() {
+  hideAll();
+  const st = STATIONS[state.currentStation];
+  const total = st.tasks.length;
+  // Save completion
+  const s = getSave();
+  if (!s.stations) s.stations = {};
+  s.stations[st.id] = { completed: true, score: state.score, total: total };
+  saveSave(s);
+
+  document.getElementById('endTitle').innerHTML = `${st.emoji} Auswertung \u2013 ${st.day}`;
+  document.getElementById('endSubtitle').textContent = `Dein Tag als ${st.job} ist abgeschlossen.`;
+  document.getElementById('endScore').textContent = `${state.score} von ${total} Aufgaben richtig`;
+
+  const pct = state.score / total;
+  let rating = '';
+  if (pct >= 0.9) rating = 'Hervorragend! Du beherrschst das Thema souver\u00e4n.';
+  else if (pct >= 0.7) rating = 'Gut gemacht! Die meisten Aufgaben hast du sicher gel\u00f6st.';
+  else if (pct >= 0.5) rating = 'Ordentlich \u2013 an einigen Stellen gibt es noch \u00dcbungsbedarf.';
+  else rating = '\u00dcbungsbedarf \u2013 wiederhole die Formeln und versuche es nochmal.';
+  document.getElementById('endRating').innerHTML = rating;
+
+  const errorsEl = document.getElementById('endErrors');
+  const wrong = state.results.filter(x => !x.correct);
+  if (wrong.length > 0) {
+    let html = '<h3>Diese Aufgaben solltest du nochmal anschauen:</h3>';
+    wrong.forEach(x => {
+      const task = st.tasks[x.task];
+      let ans = '';
+      if (task.solutionSteps) {
+        const rs = task.solutionSteps.find(s => s.startsWith('res:'));
+        if (rs) ans = rs.substring(4);
+      }
+      html += `<div class="error-item"><strong>${task.title}</strong>`;
+      if (ans) html += `<br>Korrekte Antwort: <span class="correct-answer">${ans}</span>`;
+      if (x.timeout) html += '<br><em>(Zeit abgelaufen)</em>';
+      html += '</div>';
+    });
+    errorsEl.innerHTML = html;
+  } else {
+    errorsEl.innerHTML = '<h3 style="color:var(--green-600)">Alle Aufgaben korrekt gel\u00f6st! \ud83c\udf89</h3>';
+  }
+  document.getElementById('endHints').innerHTML = `Genutzte Hinweise insgesamt: <strong>${state.hintsUsed}</strong>`;
+  document.getElementById('stationEndScreen').classList.remove('hidden');
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const modal = document.getElementById('solutionModal');
+    if (modal.classList.contains('visible')) {
+      if (!document.getElementById('continueBtn').disabled) nextTask();
+    } else if (!state.answered && document.getElementById('answerInput') && !document.getElementById('gameScreen').classList.contains('hidden')) {
+      submitCalc();
+    }
+  }
+});
+
+// ===== INIT =====
+(function init() {
+  const s = getSave();
+  if (s.name || (s.stations && Object.keys(s.stations).length > 0)) {
+    state.playerName = s.name || '';
+    state.expert = s.expert || false;
+    showHub();
+  }
+  // else welcome screen is visible by default
+})();
+</script>
+</body>
+</html>
